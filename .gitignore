@@ -1,0 +1,16 @@
+# ---- Python build files ----
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+
+# ---- Virtual environments ----
+venv/
+.env/             # if you store venvs as ".env"
+
+# ---- Editor junk ----
+.vscode/
+.idea/
+
+# ---- Project secrets ----
+.env              # ← your LandingAI keys live here

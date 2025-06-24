@@ -1,0 +1,5 @@
+Flask==3.0.3
+gunicorn
+landingai>=1.3
+pillow
+python-dotenv

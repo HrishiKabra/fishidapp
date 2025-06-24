@@ -1,0 +1,36 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fish Identification App</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 40px; }
+        img { max-width: 400px; margin: 20px auto; display: block; }
+        input[type="file"] { margin: 20px auto; }
+        .result { margin-top: 30px; font-size: 20px; font-weight: bold; color: green; }
+    </style>
+</head>
+<body>
+    <h1>Fish Identification App</h1>
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*" required>
+        <br>
+        <button type="submit">Upload and Identify</button>
+    </form>
+
+    {% if uploaded_image %}
+        <h2>Uploaded Image</h2>
+        <img src="{{ url_for('static', filename='uploads/' + uploaded_image) }}">
+    {% endif %}
+
+    {% if cropped_image %}
+        <h2>Cropped Fish</h2>
+        <img src="{{ url_for('static', filename='uploads/' + cropped_image) }}">
+    {% endif %}
+
+    {% if label %}
+        <div class="result">Predicted Fish: {{ label }}</div>
+    {% endif %}
+</body>
+</html>
