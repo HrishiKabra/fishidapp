@@ -4,7 +4,6 @@ import os
 from fishid_logic import crop_fish, classify_fish
 from io import BytesIO
 from PIL import Image
-import imghdr
 from dotenv import load_dotenv
 load_dotenv()
 
