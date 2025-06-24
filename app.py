@@ -2,11 +2,19 @@
 from flask import Flask, render_template, request, redirect, url_for
 import os
 from fishid_logic import crop_fish, classify_fish
+from io import BytesIO
+from PIL import Image
+import imghdr
 from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
+ALLOWED_EXTS = {"jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff", "heic"}
+def allowed_file(filename: str) -> bool:
+    """Fast extension gate (keeps instant 400 for .exe, .txt, etc.)."""
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTS
 
 # Replace with your actual keys
 DETECTION_API_KEY = os.getenv('LANDINGAI_DETECTION_API_KEY')
@@ -23,19 +31,34 @@ def index():
         file = request.files['image']
         if file.filename == '':
             return redirect(request.url)
+        
+        # Gatekeep by extension first (quick 400 for .exe etc.)
+        if not allowed_file(file.filename):
+            return "Unsupported file type", 400
 
-        if file:
-            filename = file.filename
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
+        try:
+            # Pillow opens virtually every raster format, even if the
+            # filename extension is wrong.
+            img = Image.open(file.stream).convert("RGB")
+        except Exception:
+            return "Could not read image", 400
 
-            # Step 1: Crop fish
-            cropped_path = crop_fish(filepath, DETECTION_API_KEY, DETECTION_ENDPOINT_ID)
+        # Always store as .jpg so downstream functions never worry
+        base = os.path.splitext(file.filename)[0]     # strip original extension
+        safe_name = f"{base}.jpg"
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], safe_name)
 
-            # Step 2: Classify fish
-            label = classify_fish(cropped_path, CLASSIFICATION_API_KEY, CLASSIFICATION_ENDPOINT_ID)
+        # Save a JPEG copy – keeps your crop_fish / classify_fish unchanged
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        img.save(filepath, format="JPEG", quality=90)
 
-            return render_template('index.html', uploaded_image=filename, cropped_image=os.path.basename(cropped_path), label=label)
+        # Step 1: Crop fish
+        cropped_path = crop_fish(filepath, DETECTION_API_KEY, DETECTION_ENDPOINT_ID)
+
+        # Step 2: Classify fish
+        label = classify_fish(cropped_path, CLASSIFICATION_API_KEY, CLASSIFICATION_ENDPOINT_ID)
+
+        return render_template('index.html', uploaded_image=safe_name, cropped_image=os.path.basename(cropped_path), label=label)
 
     return render_template('index.html')
 
