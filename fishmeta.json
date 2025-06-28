@@ -1,0 +1,34 @@
+{
+  "Butterflyfish": {
+    "scientific_family": "Chaetodontidae",
+    "introduction": "One of the most recognizable reef fish in the ocean, butterflyfish are actually a group of more than 110 species of fish.",
+    "cues": "Their bodies are thin and disk-shaped, similar to those of an angelfish, their genetic cousins. Generally, their scales are a mix of vibrant colors and darker bands in various patterns. Near the front of their bodies, they have pointed mouths full of brush-like teeth. Along their backs is a singular dorsal fin comprised of individual spines and rays, and along their bellies are caudal fins that span about half their body length.",
+    "size": "Butterflyfish are fairly small, reaching between four and 12 inches long when fully grown, about the size of a teacup.",
+    "habitat": "Primarily reef fish and are found in the world’s warm temperate and tropical waters, generally don’t live deeper than 18 meters (60 feet)",
+    "Source": ["National Marine Sanctuary Foundation", "https://marinesanctuary.org/blog/sea-wonder-butterfly-fish/"]
+  },
+
+  "Batfish": {
+    "scientific_family": "Ephippidae",
+    "introduction": "A catch-all name for five reef-dwelling species in the genus *Platax*, batfish start life as leaf-shaped juveniles drifting among flotsam before maturing into broad, silver-disk adults that cruise open reef faces.",
+    "cues": "Flattened, almost circular body with very tall dorsal and anal fins that give the profile a spade- or bat-wing look. Adults are metallic silver or grey with dark bars through the eye and near the tail, while juveniles wear dramatic brown-and-white stripes for camouflage. Teeth are small and tricuspid; pectoral fins sit just below a slight nape hump.",
+    "size": "Most species grow 12-24 in (30-60 cm) long, with the longfin batfish (*Platax teira*) topping out near 28 in (70 cm).",
+    "habitat": "Common across tropical Indo-West Pacific reefs from the Red Sea to Australia; juveniles hover in shallow mangroves and floating seaweed, while adults frequent deeper coastal and outer-reef zones down to ~30 m (100 ft).",
+    "Source": [
+      "FishBase – Platax batavianus & P. teira profiles",
+      "https://fishbase.se"
+    ]
+  },
+
+  "Moorish Idol": {
+    "scientific_family": "Zanclidae",
+    "introduction": "The Moorish idol (*Zanclus cornutus*) is the sole survivor of its family—a highly recognizable reef icon with a whip-like dorsal streamer and bold black-white-yellow bands.",
+    "cues": "Strongly compressed disk adorned with three vertical black bars over a white body, accented by a golden-yellow mid-section. A tubular snout packed with bristle-like teeth, horn-like bumps above each eye, and an elongated first dorsal spine that trails like a ribbon complete the unmistakable silhouette.",
+    "size": "Typically 6-9 in (15-23 cm) in length, with a maximum recorded size just over 9 in (23 cm).",
+    "habitat": "One of the widest-ranging reef fish on the planet—found from East Africa and the Red Sea across the entire Indo-Pacific to the Gulf of California—inhabiting reef flats, lagoons, and seaward slopes from the surface to about 180 m (590 ft), though most common above 40 m (130 ft).",
+    "Source": [
+      "FishBase – *Zanclus cornutus* profile",
+      "https://fishbase.se"
+    ]
+  }
+}

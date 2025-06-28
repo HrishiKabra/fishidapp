@@ -4,11 +4,20 @@ import os
 from fishid_logic import crop_fish, classify_fish
 from io import BytesIO
 from PIL import Image
+import json
+from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
+META = json.loads(Path("fishmeta.json").read_text())
+
+def canonical(label: str) -> str:
+    """Match 'Butterfly fish' → 'Butterflyfish' JSON key."""
+    return label.replace(" ", "").title()
+
 
 ALLOWED_EXTS = {"jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff", "heic"}
 def allowed_file(filename: str) -> bool:
@@ -56,8 +65,10 @@ def index():
 
         # Step 2: Classify fish
         label = classify_fish(cropped_path, CLASSIFICATION_API_KEY, CLASSIFICATION_ENDPOINT_ID)
+        
+        meta = META.get(canonical(label))
 
-        return render_template('index.html', uploaded_image=safe_name, cropped_image=os.path.basename(cropped_path), label=label)
+        return render_template('index.html', uploaded_image=safe_name, cropped_image=os.path.basename(cropped_path), label=label, meta=meta)
 
     return render_template('index.html')
 

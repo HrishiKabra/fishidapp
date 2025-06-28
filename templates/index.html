@@ -1,4 +1,3 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,6 +30,40 @@
 
     {% if label %}
         <div class="result">Predicted Fish: {{ label }}</div>
+    {% endif %}
+    
+    {% if meta %}
+      <div style="border:1px solid #ccc;padding:16px;margin-top:30px;
+                  max-width:450px;text-align:left;margin:30px auto 0;
+                  background:#fafafa;border-radius:8px;">
+
+        <h3 style="margin-top:0;">Family facts ({{ meta.scientific_family }})</h3>
+
+        {% if meta.introduction %}
+          <p>{{ meta.introduction }}</p>
+        {% endif %}
+
+        {% if meta.cues %}
+          <strong>Key visual cues</strong>
+          <p style="margin-top:4px;">{{ meta.cues }}</p>
+        {% endif %}
+
+        {% if meta.size %}
+          <p><strong>Typical size:</strong> {{ meta.size }}</p>
+        {% endif %}
+
+        {% if meta.habitat %}
+          <p><strong>Habitat / depth:</strong> {{ meta.habitat }}</p>
+        {% endif %}
+
+        {% if meta.Source %}
+          <small>Sources:
+            {% for src in meta.Source %}
+              <a href="{{ src }}" target="_blank">{{ loop.index }}</a>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </small>
+        {% endif %}
+      </div>
     {% endif %}
 </body>
 </html>
