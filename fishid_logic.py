@@ -37,7 +37,7 @@ def classify_fish(image_path, api_key, endpoint_id):
     predictions = predictor.predict(img)
 
     if not predictions:
-        return "Unknown"
+        return "Unknown" + " " + "0.0"
 
-    return predictions[0].label_name 
+    return predictions[0].label_name + " " + predictions[0].score
 

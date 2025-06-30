@@ -64,11 +64,11 @@ def index():
         cropped_path = crop_fish(filepath, DETECTION_API_KEY, DETECTION_ENDPOINT_ID)
 
         # Step 2: Classify fish
-        label = classify_fish(cropped_path, CLASSIFICATION_API_KEY, CLASSIFICATION_ENDPOINT_ID)
+        label, confidence = classify_fish(cropped_path, CLASSIFICATION_API_KEY, CLASSIFICATION_ENDPOINT_ID)
         
         meta = META.get(canonical(label))
 
-        return render_template('index.html', uploaded_image=safe_name, cropped_image=os.path.basename(cropped_path), label=label, meta=meta)
+        return render_template('index.html', uploaded_image=safe_name, cropped_image=os.path.basename(cropped_path), label=label, meta=meta, confidence=round(confidence * 100, 2))
 
     return render_template('index.html')
 
