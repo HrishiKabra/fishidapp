@@ -1,77 +1,91 @@
-# app.py
-from flask import Flask, render_template, request, redirect, url_for
+# app.py  – Fishial-powered version
 import os
-from fishid_logic import crop_fish, classify_fish
 from io import BytesIO
+from pathlib import Path
+from flask import Flask, render_template, request, redirect
 from PIL import Image
 import json
-from pathlib import Path
 from dotenv import load_dotenv
+
+# --- load .env (contains FISHIAL_CLIENT_ID + FISHIAL_SECRET) ---
 load_dotenv()
 
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
+# --- local modules ---
+from fishid_client import predict           # wrapper added earlier
 
+# ----------------------------------------------------------------
+app = Flask(__name__)
+app.config["UPLOAD_FOLDER"] = "static/uploads"
+
+# ---------- helper data ----------
 META = json.loads(Path("fishmeta.json").read_text())
 
 def canonical(label: str) -> str:
     """Match 'Butterfly fish' → 'Butterflyfish' JSON key."""
     return label.replace(" ", "").title()
 
-
 ALLOWED_EXTS = {"jpg", "jpeg", "png", "gif", "bmp", "webp", "tiff", "heic"}
-def allowed_file(filename: str) -> bool:
-    """Fast extension gate (keeps instant 400 for .exe, .txt, etc.)."""
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTS
+def allowed_file(fname: str) -> bool:
+    return "." in fname and fname.rsplit(".", 1)[1].lower() in ALLOWED_EXTS
+# ----------------------------------------------------------------
 
-# Replace with your actual keys
-DETECTION_API_KEY = os.getenv('LANDINGAI_DETECTION_API_KEY')
-DETECTION_ENDPOINT_ID = os.getenv('LANDINGAI_DETECTION_ENDPOINT_ID')
-CLASSIFICATION_API_KEY = os.getenv('LANDINGAI_CLASSIFICATION_API_KEY')
-CLASSIFICATION_ENDPOINT_ID = os.getenv('LANDINGAI_CLASSIFICATION_ENDPOINT_ID')
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route("/", methods=["GET", "POST"])
 def index():
-    if request.method == 'POST':
-        if 'image' not in request.files:
-            return redirect(request.url)
+    if request.method == "POST":
 
-        file = request.files['image']
-        if file.filename == '':
-            return redirect(request.url)
-        
-        # Gatekeep by extension first (quick 400 for .exe etc.)
+        # ---------- 1  basic upload gates ----------
+        if "image" not in request.files:
+            return redirect(request.url)           # no file part
+
+        file = request.files["image"]
+        if file.filename == "":
+            return redirect(request.url)           # empty filename
+
         if not allowed_file(file.filename):
             return "Unsupported file type", 400
 
+        # ---------- 2  read & validate image ----------
+        img_bytes = file.read()
         try:
-            # Pillow opens virtually every raster format, even if the
-            # filename extension is wrong.
-            img = Image.open(file.stream).convert("RGB")
+            Image.open(BytesIO(img_bytes)).verify()    # quick sanity check
         except Exception:
             return "Could not read image", 400
 
-        # Always store as .jpg so downstream functions never worry
-        base = os.path.splitext(file.filename)[0]     # strip original extension
+        # ---------- 3  persist a JPEG copy (optional) ----------
+        base = os.path.splitext(file.filename)[0]
         safe_name = f"{base}.jpg"
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], safe_name)
+        save_path = os.path.join(app.config["UPLOAD_FOLDER"], safe_name)
+        os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+        # Convert to RGB & save – ensures consistent format downstream
+        Image.open(BytesIO(img_bytes)).convert("RGB").save(save_path,
+                                                          format="JPEG",
+                                                          quality=90)
 
-        # Save a JPEG copy – keeps your crop_fish / classify_fish unchanged
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-        img.save(filepath, format="JPEG", quality=90)
+        # ---------- 4  Fishial prediction ----------
+        try:
+            out = predict(img_bytes)      # {'species': str, 'prob': float}
+        except Exception as e:
+            return f"Prediction error: {e}", 500
 
-        # Step 1: Crop fish
-        cropped_path = crop_fish(filepath, DETECTION_API_KEY, DETECTION_ENDPOINT_ID)
+        label = out["species"]
+        confidence = out["prob"]
+        meta = META.get(canonical(label))        # None if not in JSON
 
-        # Step 2: Classify fish
-        label, confidence = classify_fish(cropped_path, CLASSIFICATION_API_KEY, CLASSIFICATION_ENDPOINT_ID)
-        
-        meta = META.get(canonical(label))
+        # ---------- 5  render result ----------
+        return render_template(
+            "index.html",
+            uploaded_image=safe_name,            # original (saved) image
+            cropped_image=safe_name,             # keep var for template compatibility
+            label=label,
+            meta=meta,
+            confidence=round(confidence * 100, 2),
+        )
 
-        return render_template('index.html', uploaded_image=safe_name, cropped_image=os.path.basename(cropped_path), label=label, meta=meta, confidence=round(confidence * 100, 2))
+    # GET
+    return render_template("index.html")
 
-    return render_template('index.html')
 
-if __name__ == '__main__':
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+if __name__ == "__main__":
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
     app.run(debug=True)

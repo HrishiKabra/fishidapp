@@ -3,3 +3,5 @@ gunicorn
 landingai==0.3.49
 pillow
 python-dotenv
+requests>=2.32
+fish-identification @ git+https://github.com/fishial/fish-identification.git
