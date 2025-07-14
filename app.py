@@ -5,6 +5,7 @@ from pathlib import Path
 from flask import Flask, render_template, request, redirect
 from PIL import Image
 import json
+from fish_meta import get as meta_for
 from dotenv import load_dotenv
 
 # --- load .env (contains FISHIAL_CLIENT_ID + FISHIAL_SECRET) ---
@@ -70,17 +71,15 @@ def index():
 
         label = out["species"]
         confidence = out["prob"]
-        meta = META.get(canonical(label))        # None if not in JSON
+        out  = predict(img_bytes)          # {'species': 'Caranx ignobilis', 'prob': 0.97}
+        meta = meta_for(out["species"])    # pulls + caches FishBase / Wiki data
 
         # ---------- 5  render result ----------
-        return render_template(
-            "index.html",
-            uploaded_image=safe_name,            # original (saved) image
-            cropped_image=safe_name,             # keep var for template compatibility
-            label=label,
-            meta=meta,
-            confidence=round(confidence * 100, 2),
-        )
+        return render_template("index.html",
+                       uploaded_image=safe_name,            # original (saved) image
+                       label=out["species"],
+                       confidence=int(out["prob"]*100),
+                       meta=meta)
 
     # GET
     return render_template("index.html")

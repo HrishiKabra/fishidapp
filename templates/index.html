@@ -1,73 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Fish Identification App</title>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 40px; }
-        img { max-width: 400px; margin: 20px auto; display: block; }
-        input[type="file"] { margin: 20px auto; }
-        .result { margin-top: 30px; font-size: 20px; font-weight: bold; color: green; }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Fish ID App</title>
+
+  <!-- Tailwind + DaisyUI (CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { plugins: [window.daisyui], daisyui:{theme:"emerald"} };
+  </script>
 </head>
-<body>
-    <h1>Fish Identification App</h1>
-    <form method="post" enctype="multipart/form-data">
-        <input type="file" name="image" accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.tiff,.tif,.heic,image/*" required>
-        <br>
-        <button type="submit">Upload and Identify</button>
-    </form>
 
-    {% if uploaded_image %}
-        <h2>Uploaded Image</h2>
-        <img src="{{ url_for('static', filename='uploads/' + uploaded_image) }}">
-    {% endif %}
+<body class="min-h-screen flex flex-col items-center bg-base-200 p-6">
 
-    {% if cropped_image %}
-        <h2>Cropped Fish</h2>
-        <img src="{{ url_for('static', filename='uploads/' + cropped_image) }}">
-    {% endif %}
+  <header class="mb-8 text-center">
+    <h1 class="text-4xl font-bold tracking-tight">🐠 Fish Identification</h1>
+    <p class="opacity-70 mt-1">Upload a photo &nbsp;•&nbsp; Get the species & facts</p>
+  </header>
 
-    {% if label %}
-        <div class="result">Predicted Fish: {{ label }}</div>
-    {% endif %}
-    
-    {% if confidence %}
-        <div class="result">Confidence: {{ confidence }}</div>
-    {% endif %}
-    
-    {% if meta %}
-      <div style="border:1px solid #ccc;padding:16px;margin-top:30px;
-                  max-width:450px;text-align:left;margin:30px auto 0;
-                  background:#fafafa;border-radius:8px;">
+  <!-- ---------- upload form ---------- -->
+  <form method="post" enctype="multipart/form-data"
+        class="flex flex-col items-center gap-4 bg-base-100 p-6 rounded-box shadow-lg w-full max-w-lg">
+    <input type="file" name="image"
+           accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.tiff,.heic,image/*"
+           class="file-input file-input-bordered w-full" required>
+    <button type="submit" class="btn btn-primary w-full">Upload & Identify</button>
+  </form>
 
-        <h3 style="margin-top:0;">Family facts ({{ meta.scientific_family }})</h3>
+  <!-- ---------- result card ---------- -->
+  {% if label %}
+  <article class="card shadow-xl bg-base-100 my-10 w-full max-w-3xl">
+    <figure class="relative">
+      <img src="{{ url_for('static', filename='uploads/' + uploaded_image) }}"
+           alt="Uploaded fish" class="object-contain max-h-[500px] w-full">
 
-        {% if meta.introduction %}
-          <p>{{ meta.introduction }}</p>
-        {% endif %}
+      {# Uncomment below if you later save a Grad-CAM heatmap as `heatmap.jpg` #}
+      {# <img src="{{ url_for('static', filename='uploads/heatmap.jpg') }}" #}
+      {#      class="absolute inset-0 w-full h-full object-contain opacity-60 mix-blend-screen"> #}
+    </figure>
 
-        {% if meta.cues %}
-          <strong>Key visual cues</strong>
-          <p style="margin-top:4px;">{{ meta.cues }}</p>
-        {% endif %}
+    <div class="card-body">
+      <h2 class="card-title text-2xl">
+        {{ meta.common_name or "Unknown common name" }}
+        <span class="badge badge-accent badge-outline">{{ label }}</span>
+      </h2>
 
-        {% if meta.size %}
-          <p><strong>Typical size:</strong> {{ meta.size }}</p>
-        {% endif %}
+      <!-- confidence bar -->
+      <progress class="progress progress-accent w-full" max="100"
+                value="{{ confidence }}"></progress>
+      <p class="text-sm opacity-70 mb-4">Confidence&nbsp;{{ confidence }} %</p>
 
-        {% if meta.habitat %}
-          <p><strong>Habitat / depth:</strong> {{ meta.habitat }}</p>
-        {% endif %}
+      <!-- intro paragraph -->
+      <p>{{ meta.intro or "No description available for this species." }}</p>
 
-        {% if meta.Source %}
-          <small>Sources:
-            {% for src in meta.Source %}
-              <a href="{{ src }}" target="_blank">{{ loop.index }}</a>{% if not loop.last %}, {% endif %}
-            {% endfor %}
-          </small>
-        {% endif %}
-      </div>
-    {% endif %}
+      <!-- facts list -->
+      <ul class="list-disc list-inside mt-4 space-y-1 text-sm">
+        {% if meta.habitat %}<li><b>Habitat:</b> {{ meta.habitat }}</li>{% endif %}
+        {% if meta.distribution %}<li><b>Range:</b> {{ meta.distribution }}</li>{% endif %}
+        {% if meta.max_length_cm %}<li><b>Max length:</b> {{ meta.max_length_cm }} cm</li>{% endif %}
+        {% if meta.visual_cues %}<li><b>Visual cues:</b> {{ meta.visual_cues }}</li>{% endif %}
+      </ul>
+
+      <!-- source links -->
+      {% if meta.source %}
+        <p class="mt-4 text-xs opacity-60">
+          Sources:
+          {% for s in meta.source %}
+            <a href="{{ s }}" target="_blank" class="link link-hover">{{ loop.index }}</a>{% if not loop.last %}, {% endif %}
+          {% endfor %}
+        </p>
+      {% endif %}
+    </div>
+  </article>
+  {% endif %}
+
+  <footer class="mt-auto text-xs opacity-60">
+    Powered by FishBase, Wikipedia, and Fishial.ai
+  </footer>
+
 </body>
 </html>
