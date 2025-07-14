@@ -72,14 +72,18 @@ def index():
         label = out["species"]
         confidence = out["prob"]
         out  = predict(img_bytes)          # {'species': 'Caranx ignobilis', 'prob': 0.97}
-        meta = meta_for(out["species"])    # pulls + caches FishBase / Wiki data
+        scientific = out["species"]          # e.g. "Dasyatis pastinaca"
+        meta = meta_for(scientific)
 
         # ---------- 5  render result ----------
         return render_template("index.html",
-                       uploaded_image=safe_name,            # original (saved) image
-                       label=out["species"],
-                       confidence=int(out["prob"]*100),
-                       meta=meta)
+                       scientific=scientific,
+                       confidence=int(out["prob"] * 100),
+                       meta=meta,
+                       uploaded_image=safe_name
+        )
+        
+        
 
     # GET
     return render_template("index.html")

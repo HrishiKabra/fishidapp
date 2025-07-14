@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <title>Fish ID App</title>
 
-  <!-- Tailwind + DaisyUI (CDN) -->
+  <!-- Tailwind + DaisyUI via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = { plugins: [window.daisyui], daisyui:{theme:"emerald"} };
@@ -13,70 +13,61 @@
 
 <body class="min-h-screen flex flex-col items-center bg-base-200 p-6">
 
+  <!-- ====== header ====== -->
   <header class="mb-8 text-center">
     <h1 class="text-4xl font-bold tracking-tight">🐠 Fish Identification</h1>
-    <p class="opacity-70 mt-1">Upload a photo &nbsp;•&nbsp; Get the species & facts</p>
+    <p class="opacity-70 mt-1">Upload a photo • Get structured facts</p>
   </header>
 
-  <!-- ---------- upload form ---------- -->
+  <!-- ====== upload form ====== -->
   <form method="post" enctype="multipart/form-data"
         class="flex flex-col items-center gap-4 bg-base-100 p-6 rounded-box shadow-lg w-full max-w-lg">
     <input type="file" name="image"
            accept=".jpg,.jpeg,.png,.gif,.bmp,.webp,.tiff,.heic,image/*"
            class="file-input file-input-bordered w-full" required>
-    <button type="submit" class="btn btn-primary w-full">Upload & Identify</button>
+    <button class="btn btn-primary w-full">Upload & Identify</button>
   </form>
 
-  <!-- ---------- result card ---------- -->
-  {% if label %}
-  <article class="card shadow-xl bg-base-100 my-10 w-full max-w-3xl">
-    <figure class="relative">
+  <!-- ====== result card ====== -->
+  {% if meta %}
+  <article class="card bg-base-100 shadow-xl my-10 w-full max-w-4xl">
+    <figure>
       <img src="{{ url_for('static', filename='uploads/' + uploaded_image) }}"
            alt="Uploaded fish" class="object-contain max-h-[500px] w-full">
-
-      {# Uncomment below if you later save a Grad-CAM heatmap as `heatmap.jpg` #}
-      {# <img src="{{ url_for('static', filename='uploads/heatmap.jpg') }}" #}
-      {#      class="absolute inset-0 w-full h-full object-contain opacity-60 mix-blend-screen"> #}
     </figure>
 
     <div class="card-body">
       <h2 class="card-title text-2xl">
-        {{ meta.common_name or "Unknown common name" }}
-        <span class="badge badge-accent badge-outline">{{ label }}</span>
+        {{ meta.common_name or scientific }}
+        <span class="badge badge-outline">{{ scientific }}</span>
       </h2>
 
-      <!-- confidence bar -->
-      <progress class="progress progress-accent w-full" max="100"
-                value="{{ confidence }}"></progress>
-      <p class="text-sm opacity-70 mb-4">Confidence&nbsp;{{ confidence }} %</p>
+      <!-- confidence -->
+      <progress class="progress progress-accent w-full"
+                max="100" value="{{ confidence }}"></progress>
+      <p class="text-xs opacity-60 mb-4">Confidence&nbsp;{{ confidence }} %</p>
 
-      <!-- intro paragraph -->
-      <p>{{ meta.intro or "No description available for this species." }}</p>
-
-      <!-- facts list -->
-      <ul class="list-disc list-inside mt-4 space-y-1 text-sm">
-        {% if meta.habitat %}<li><b>Habitat:</b> {{ meta.habitat }}</li>{% endif %}
-        {% if meta.distribution %}<li><b>Range:</b> {{ meta.distribution }}</li>{% endif %}
-        {% if meta.max_length_cm %}<li><b>Max length:</b> {{ meta.max_length_cm }} cm</li>{% endif %}
-        {% if meta.visual_cues %}<li><b>Visual cues:</b> {{ meta.visual_cues }}</li>{% endif %}
-      </ul>
-
-      <!-- source links -->
-      {% if meta.source %}
-        <p class="mt-4 text-xs opacity-60">
-          Sources:
-          {% for s in meta.source %}
-            <a href="{{ s }}" target="_blank" class="link link-hover">{{ loop.index }}</a>{% if not loop.last %}, {% endif %}
-          {% endfor %}
-        </p>
+      <!-- intro -->
+      {% if meta.intro %}
+        <p class="mb-4">{{ meta.intro }}</p>
       {% endif %}
+
+      <!-- two-column fact grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        {% if meta.visual_cues %}<p><b>Visual cues:</b> {{ meta.visual_cues }}</p>{% endif %}
+        {% if meta.habitat %}<p><b>Habitat:</b> {{ meta.habitat }}</p>{% endif %}
+        {% if meta.distribution %}<p><b>Range:</b> {{ meta.distribution }}</p>{% endif %}
+        {% if meta.max_length_cm %}<p><b>Max length:</b> {{ meta.max_length_cm }} cm</p>{% endif %}
+        {% if meta.iucn_status %}<p><b>IUCN status:</b> {{ meta.iucn_status }}</p>{% endif %}
+        {% if meta.fun_facts %}<p class="md:col-span-2"><b>Fun fact:</b> {{ meta.fun_facts }}</p>{% endif %}
+      </div>
     </div>
   </article>
   {% endif %}
 
+  <!-- ====== footer ====== -->
   <footer class="mt-auto text-xs opacity-60">
-    Powered by FishBase, Wikipedia, and Fishial.ai
+    Powered by FishBase, Wikipedia, Groq LLM, and Fishial.ai
   </footer>
-
 </body>
 </html>

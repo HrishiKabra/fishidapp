@@ -1,16 +1,30 @@
-# fish_meta.py  – FishBase + Wikipedia + LLM visual cues
-import time, urllib.parse as up, shelve, os, requests
+"""
+fish_meta.py
+------------
+Pulls structured information for a fish species from:
+  • FishBase open API
+  • Wikipedia REST summary
+  • Groq Cloud (Llama-3-70B) for visual cues + a fun fact
+Everything is cached in a local shelve DB so each species hits
+external APIs only once per day.
+"""
 
-FB_URL = "https://fishbase.ropensci.org/species?Scientific_Name="
-WP_URL = "https://en.wikipedia.org/api/rest_v1/page/summary/"
-TTL    = 24 * 3600                         # refresh cache daily
-GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_KEY      = os.getenv("GROQ_API_KEY")  # set in .env & Render
+from __future__ import annotations
+import os, time, urllib.parse as up, shelve, requests
 
-# ---------- helper: FishBase ----------
-def _from_fishbase(name):
+# ---------------- configuration ----------------
+CACHE_SECONDS  = 24 * 3600                          # re-query once a day
+FISHBASE_URL   = "https://fishbase.ropensci.org/species?Scientific_Name="
+WIKI_URL       = "https://en.wikipedia.org/api/rest_v1/page/summary/"
+GROQ_URL       = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_KEY       = os.getenv("GROQ_API_KEY")           # put this in .env / Render
+# ------------------------------------------------
+
+
+def _fishbase(name: str) -> dict:
+    """Return dict with keys common_name, habitat, distribution, max_length_cm, picture."""
     try:
-        j = requests.get(FB_URL + up.quote(name), timeout=15).json()
+        j = requests.get(FISHBASE_URL + up.quote(name), timeout=15).json()
         d = j["data"][0]
         return {
             "common_name":   d.get("FBname") or d.get("EnglishName"),
@@ -22,64 +36,83 @@ def _from_fishbase(name):
     except Exception:
         return {}
 
-# ---------- helper: Wikipedia ----------
-def _from_wiki(name):
-    r = requests.get(WP_URL + up.quote(name.replace(" ", "_")), timeout=15)
-    if r.status_code == 200:
-        j = r.json()
-        return {
-            "intro":   j.get("extract"),
-            "picture": j.get("thumbnail", {}).get("source"),
-        }
-    return {}
 
-# ---------- helper: one-shot LLM for visual cues ----------
-def _visual_cues(name):
-    if not GROQ_KEY:
-        return ""
+def _wiki(name: str) -> dict:
+    """Return dict with keys intro, picture, iucn_status, common_name (fallback)."""
+    r = requests.get(WIKI_URL + up.quote(name.replace(" ", "_")), timeout=15)
+    if r.status_code != 200:
+        return {}
 
-    prompt = (f"List three distinctive visual features (colour, shape, markings) "
-              f"that help a snorkeller distinguish the fish species {name} "
-              f"from other reef fish. Bullet points, max 40 words total.")
+    j = r.json()
+    status = ""
+    if "description" in j and "IUCN" in j["description"]:
+        # crude extract e.g. "LC", "EN"
+        status = j["description"].split("(")[-1].strip(")")
 
-    body = {
-        "model": "llama3-70b-8192",
-        "messages": [
-            {"role": "system", "content": "You are a concise ichthyology assistant."},
-            {"role": "user", "content": prompt}
-        ],
-        "max_tokens": 80,
-        "temperature": 0.7,
+    return {
+        "intro":        j.get("extract"),
+        "picture":      j.get("thumbnail", {}).get("source"),
+        "iucn_status":  status,
+        "common_name":  j.get("title") if j.get("title") != name else "",
     }
 
-    r = requests.post(
-        GROQ_ENDPOINT,
-        json=body,
-        timeout=20,
-        headers={"Authorization": f"Bearer {GROQ_KEY}"}
-    )
-    if r.status_code == 200:
-        return r.json()["choices"][0]["message"]["content"].strip()
+
+def _groq_prompt(prompt: str, max_tokens: int = 80, temperature: float = 0.7) -> str:
+    """Return single string reply from Groq Llama-3 model, or empty string on failure."""
+    if not GROQ_KEY:
+        return ""
+    body = {
+        "model": "llama3-70b-8192",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+    }
+    try:
+        r = requests.post(GROQ_URL, json=body,
+                          headers={"Authorization": f"Bearer {GROQ_KEY}"},
+                          timeout=20)
+        if r.status_code == 200:
+            return r.json()["choices"][0]["message"]["content"].strip()
+    except Exception:
+        pass
     return ""
 
-# ---------- public: get(name) ----------
-def get(name: str) -> dict:
+
+def _visual_cues(name: str) -> str:
+    return _groq_prompt(
+        f"Give three very short bullet-point visual cues (colour, pattern, shape) "
+        f"that help identify the fish species {name}. Limit to 40 words total.",
+        max_tokens=60
+    )
+
+
+def _fun_fact(name: str) -> str:
+    return _groq_prompt(
+        f"Provide one fun trivia fact (max 25 words) about the fish species {name}.",
+        max_tokens=50, temperature=0.8
+    )
+
+
+# ---------------- public helper ----------------
+def get(scientific_name: str) -> dict:
     """
-    Merge FishBase + Wikipedia + cached LLM cues.
-    Returns a dict (may contain keys: common_name, intro, habitat,
-    distribution, max_length_cm, picture, visual_cues).
+    Return cached, merged dict for the given scientific name.
+    Keys that may appear:
+      common_name, intro, habitat, distribution, max_length_cm,
+      picture, iucn_status, visual_cues, fun_facts
     """
     with shelve.open("fish_cache") as db:
-        rec = db.get(name)
-        fresh = rec and (time.time() - rec["_ts"] < TTL)
+        item = db.get(scientific_name, {})
+        is_stale = not item or time.time() - item.get("_ts", 0) > CACHE_SECONDS
 
-        if not fresh:
-            rec = _from_fishbase(name) | _from_wiki(name)
-            rec["_ts"] = time.time()
+        if is_stale:
+            item = {**_fishbase(scientific_name), **_wiki(scientific_name)}
+            item["_ts"] = time.time()
 
-        # add visual_cues once per species
-        if "visual_cues" not in rec:
-            rec["visual_cues"] = _visual_cues(name)
+        if "visual_cues" not in item:
+            item["visual_cues"] = _visual_cues(scientific_name)
+        if "fun_facts" not in item:
+            item["fun_facts"] = _fun_fact(scientific_name)
 
-        db[name] = rec
-        return rec
+        db[scientific_name] = item
+        return item
