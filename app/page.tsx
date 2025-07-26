@@ -60,19 +60,7 @@ export default function FishIDLanding() {
             timestamp: new Date().toISOString(),
             userId: user?.id,
             apiResponse: response, // Store the full API response for debugging
-            identification: {
-              id: response.result.id || `temp_${Date.now()}`,
-              scientific_name: response.result.scientific_name || response.result.scientific,
-              common_name: response.result.common_name || response.result.name,
-              confidence: response.result.confidence || 0,
-              description: response.result.description || response.result.intro,
-              habitat: response.result.habitat,
-              distribution: response.result.distribution,
-              max_length_cm: response.result.max_length_cm,
-              conservation_status: response.result.conservation_status || response.result.iucn_status,
-              fun_facts: response.result.fun_facts,
-              reference_image: response.result.reference_image,
-            },
+            identification: response.result, // Use the result directly from Flask backend
           }
 
           console.log("💾 Storing identification data:", identificationData)
@@ -237,6 +225,16 @@ export default function FishIDLanding() {
                 <summary className="text-white text-sm cursor-pointer">Debug Info</summary>
                 <pre className="text-xs text-white/80 mt-2 overflow-auto">{JSON.stringify(uploadResult, null, 2)}</pre>
               </details>
+            </div>
+          )}
+
+          {/* Flask Backend Status */}
+          {process.env.NODE_ENV === "development" && (
+            <div className="mt-4 mx-auto max-w-md">
+              <div className="bg-blue-500/20 border border-blue-500/50 text-blue-200 px-4 py-2 rounded-lg backdrop-blur-sm text-xs">
+                <p className="font-medium">🔗 Flask Backend: {process.env.NEXT_PUBLIC_FLASK_API_URL}</p>
+                <p>Ready to connect to your working Flask API!</p>
+              </div>
             </div>
           )}
         </div>

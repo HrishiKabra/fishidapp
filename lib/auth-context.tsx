@@ -41,17 +41,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const storedUser = localStorage.getItem(USER_KEY)
 
       if (token && storedUser) {
-        // Verify token is still valid
         try {
+          console.log("🔐 Verifying stored token...")
           const response = await authApi.verifyToken(token)
+
           if (response.success && response.user) {
+            console.log("✅ Token valid, user logged in:", response.user)
             setUser(response.user)
           } else {
-            // Token invalid, clear storage
+            console.log("❌ Token invalid, clearing storage")
             clearAuthData()
           }
         } catch (error) {
-          // Token verification failed, clear storage
+          console.log("❌ Token verification failed:", error)
           clearAuthData()
         }
       }
@@ -72,16 +74,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     setLoading(true)
     try {
+      console.log("🔐 Attempting login for:", email)
       const response = await authApi.login(email, password)
 
       if (response.success && response.user && response.token) {
-        setUser(response.user)
+        console.log("✅ Login successful:", response.user)
+
+        // Create user object with avatar
+        const userData = {
+          ...response.user,
+          avatar: response.user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${response.user.email}`,
+        }
+
+        setUser(userData)
         localStorage.setItem(TOKEN_KEY, response.token)
-        localStorage.setItem(USER_KEY, JSON.stringify(response.user))
+        localStorage.setItem(USER_KEY, JSON.stringify(userData))
       } else {
-        throw new Error("Login failed")
+        throw new Error("Login failed - invalid response")
       }
     } catch (error) {
+      console.error("❌ Login error:", error)
       if (error instanceof ApiError) {
         throw new Error(error.message)
       }
@@ -94,16 +106,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signup = async (email: string, password: string, name: string) => {
     setLoading(true)
     try {
+      console.log("📝 Attempting signup for:", email)
       const response = await authApi.signup(email, password, name)
 
       if (response.success && response.user && response.token) {
-        setUser(response.user)
+        console.log("✅ Signup successful:", response.user)
+
+        // Create user object with avatar
+        const userData = {
+          ...response.user,
+          avatar: response.user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${response.user.email}`,
+        }
+
+        setUser(userData)
         localStorage.setItem(TOKEN_KEY, response.token)
-        localStorage.setItem(USER_KEY, JSON.stringify(response.user))
+        localStorage.setItem(USER_KEY, JSON.stringify(userData))
       } else {
-        throw new Error("Signup failed")
+        throw new Error("Signup failed - invalid response")
       }
     } catch (error) {
+      console.error("❌ Signup error:", error)
       if (error instanceof ApiError) {
         throw new Error(error.message)
       }
@@ -116,14 +138,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     setLoading(true)
     try {
-      // Call logout endpoint (optional for JWT)
+      console.log("🚪 Logging out...")
       await authApi.logout()
     } catch (error) {
-      // Even if logout API fails, we still clear local data
       console.error("Logout API error:", error)
     } finally {
       clearAuthData()
       setLoading(false)
+      console.log("✅ Logout complete")
     }
   }
 

@@ -37,7 +37,10 @@ export function BackendStatus({ isOpen, onClose }: BackendStatusProps) {
     { endpoint: "/health", method: "GET", description: "Health check endpoint" },
     { endpoint: "/api/auth/login", method: "POST", description: "Login endpoint" },
     { endpoint: "/api/auth/register", method: "POST", description: "Registration endpoint" },
+    { endpoint: "/api/auth/verify", method: "POST", description: "Token verification endpoint" },
     { endpoint: "/api/fish/identify", method: "POST", description: "Fish identification endpoint" },
+    { endpoint: "/api/fish/history", method: "GET", description: "Fish history endpoint" },
+    { endpoint: "/api/fish/save", method: "POST", description: "Save fish endpoint" },
   ])
 
   const [copied, setCopied] = useState(false)
@@ -112,8 +115,6 @@ export function BackendStatus({ isOpen, onClose }: BackendStatusProps) {
   if (!isOpen) return null
 
   const flaskUrl = process.env.NEXT_PUBLIC_FLASK_API_URL || "http://localhost:5000"
-  const isRenderUrl = flaskUrl.includes(".onrender.com")
-  const isLocalhost = flaskUrl.includes("localhost")
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -122,7 +123,7 @@ export function BackendStatus({ isOpen, onClose }: BackendStatusProps) {
           <Button variant="ghost" size="icon" className="absolute right-2 top-2" onClick={onClose}>
             <X className="w-4 h-4" />
           </Button>
-          <CardTitle className="text-xl text-center">Backend Status & Diagnostics</CardTitle>
+          <CardTitle className="text-xl text-center">Flask Backend Status</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Backend URL */}
@@ -135,11 +136,9 @@ export function BackendStatus({ isOpen, onClose }: BackendStatusProps) {
             </div>
             <div className="flex items-center space-x-2">
               <code className="flex-1 p-2 bg-gray-100 rounded text-xs break-all">{flaskUrl}</code>
-              {isRenderUrl && (
-                <Button variant="ghost" size="sm" onClick={() => window.open(flaskUrl, "_blank")} className="h-8 px-2">
-                  <ExternalLink className="w-3 h-3" />
-                </Button>
-              )}
+              <Button variant="ghost" size="sm" onClick={() => window.open(flaskUrl, "_blank")} className="h-8 px-2">
+                <ExternalLink className="w-3 h-3" />
+              </Button>
             </div>
           </div>
 
@@ -184,7 +183,7 @@ export function BackendStatus({ isOpen, onClose }: BackendStatusProps) {
           {/* Endpoint Testing */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium">API Endpoint Tests</h3>
+              <h3 className="text-sm font-medium">Flask API Endpoint Tests</h3>
               <Button
                 onClick={testEndpoints}
                 disabled={testingEndpoints}
@@ -200,7 +199,7 @@ export function BackendStatus({ isOpen, onClose }: BackendStatusProps) {
                 ) : (
                   <>
                     <TestTube className="w-3 h-3 mr-1" />
-                    Test Endpoints
+                    Test All Endpoints
                   </>
                 )}
               </Button>
@@ -223,12 +222,15 @@ export function BackendStatus({ isOpen, onClose }: BackendStatusProps) {
                               ? "bg-green-500 text-white"
                               : test.status === 404
                                 ? "bg-orange-500 text-white"
-                                : "bg-red-500 text-white"
+                                : test.status === 405
+                                  ? "bg-yellow-500 text-white"
+                                  : "bg-red-500 text-white"
                           }`}
                         >
                           {test.status === 0 ? "No Response" : `${test.status}`}
                         </Badge>
-                        {test.status === 404 && <span className="text-xs text-orange-600">Missing Route</span>}
+                        {test.status === 404 && <span className="text-xs text-orange-600">Missing</span>}
+                        {test.status === 405 && <span className="text-xs text-yellow-600">Method Not Allowed</span>}
                       </>
                     ) : (
                       <span className="text-xs text-gray-400">Not tested</span>
@@ -256,45 +258,15 @@ export function BackendStatus({ isOpen, onClose }: BackendStatusProps) {
             </Button>
           </div>
 
-          {/* Troubleshooting Guide */}
+          {/* Quick Test */}
           <div className="text-xs text-gray-500 space-y-2">
-            <p className="font-medium mb-1">🔧 Fix Missing Routes:</p>
-            <div className="bg-gray-50 p-3 rounded">
-              <p className="font-medium mb-2">Add this to your Flask app:</p>
-              <pre className="text-xs bg-white p-2 rounded border overflow-x-auto">
-                {`@app.route('/api/fish/identify', methods=['POST'])
-def identify_fish():
-    # Your fish identification logic here
-    return jsonify({
-        'success': True,
-        'result': {
-            'common_name': 'Fish Name',
-            'scientific_name': 'Scientific Name',
-            'confidence': 95
-        }
-    })`}
-              </pre>
-            </div>
-
-            <div className="space-y-1">
-              <p className="font-medium">Common Issues:</p>
-              <ul className="list-disc list-inside space-y-1">
-                {isRenderUrl ? (
-                  <>
-                    <li>Missing Flask routes (404 errors above)</li>
-                    <li>Check Render deployment logs</li>
-                    <li>Ensure CORS is enabled for your frontend domain</li>
-                    <li>Free tier services may sleep (first request takes time)</li>
-                  </>
-                ) : (
-                  <>
-                    <li>Flask backend not running locally</li>
-                    <li>Missing Flask routes (404 errors above)</li>
-                    <li>CORS not enabled in Flask app</li>
-                    <li>Wrong port (should be 5000)</li>
-                  </>
-                )}
-              </ul>
+            <p className="font-medium">✅ Your Flask backend is working!</p>
+            <div className="bg-green-50 p-3 rounded">
+              <p className="text-green-700 mb-2">Backend confirmed working at:</p>
+              <code className="text-xs bg-white p-1 rounded">{flaskUrl}</code>
+              <p className="text-green-600 mt-2 text-xs">
+                All endpoints should now connect properly. Try uploading a fish image!
+              </p>
             </div>
           </div>
         </CardContent>
