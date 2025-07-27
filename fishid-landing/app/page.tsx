@@ -283,12 +283,18 @@ export default function FishIDLanding() {
             <div>
               <h3 className="text-2xl font-bold mb-4">Reach Out!</h3>
               <p className="text-sm mb-2">Feel free to reach out to me on Instagram, LinkedIn or via email.</p>
-              <p className="text-sm mb-6">kalebrahn@gmail.com</p>
+              <p className="text-sm mb-6">kabrahrishi@gmail.com</p>
 
               <div className="flex space-x-4 mb-6">
-                <Instagram className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
-                <Github className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
-                <Linkedin className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
+                <a href="https://instagram.com/hrishikabra" target="_blank" rel="noopener noreferrer">
+                  <Instagram className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
+                </a>
+                <a href="https://github.com/HrishiKabra" target="_blank" rel="noopener noreferrer">
+                  <Github className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
+                </a>
+                <a href="https://linkedin.com/in/HrishiKabra" target="_blank" rel="noopener noreferrer">
+                  <Linkedin className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
+                </a>
               </div>
 
               <p className="text-xs text-gray-300">© 2024 All Rights Reserved</p>
