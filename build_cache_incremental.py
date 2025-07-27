@@ -8,6 +8,7 @@ import json
 import time
 import shelve
 import os
+import sys
 from fish_meta.fish_meta import get as meta_for
 from fish_fallback_data import FISH_FALLBACK_DATA
 
@@ -102,13 +103,31 @@ if __name__ == "__main__":
     if not os.getenv("GROQ_API_KEY"):
         print("⚠️  Warning: GROQ_API_KEY not set. Fun facts and visual cues will be limited.")
     
-    # Build cache for first 20 species
-    cached, errors = build_cache_incremental(0, 20)
+    # Parse command line arguments
+    start_index = 0
+    count = 20
+    
+    if len(sys.argv) >= 2:
+        try:
+            start_index = int(sys.argv[1])
+        except ValueError:
+            print("Error: start_index must be a number")
+            sys.exit(1)
+    
+    if len(sys.argv) >= 3:
+        try:
+            count = int(sys.argv[2])
+        except ValueError:
+            print("Error: count must be a number")
+            sys.exit(1)
+    
+    # Build cache for specified range
+    cached, errors = build_cache_incremental(start_index, count)
     
     # Show stats
     show_cache_stats()
     
     print(f"\n💡 To continue building cache, run:")
-    print(f"   python build_cache_incremental.py 20 20  # Next 20 species")
-    print(f"   python build_cache_incremental.py 40 20  # Next 20 species")
+    print(f"   python build_cache_incremental.py {start_index + count} {count}  # Next batch")
+    print(f"   python build_cache_incremental.py {start_index + count * 2} {count}  # Next batch")
     print(f"   # And so on...") 
