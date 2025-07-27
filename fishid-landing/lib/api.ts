@@ -276,20 +276,33 @@ export const healthApi = {
       // Determine the HTTP method based on the endpoint
       const method = endpoint.includes('/auth/') || endpoint.includes('/fish/identify') || endpoint.includes('/fish/save') ? 'POST' : 'GET'
       
-      // Prepare request body for POST requests
-      const body = method === 'POST' ? JSON.stringify({
-        email: 'test@example.com',
-        password: 'test123',
-        ...(endpoint.includes('/fish/identify') && { file: 'test.jpg' }),
-        ...(endpoint.includes('/fish/save') && { identification_id: 'test_id', notes: 'test' }),
-        ...(endpoint.includes('/auth/verify') && { token: 'test_token' })
-      }) : undefined
+      let body: any = undefined
+      let headers: any = {}
+      
+      if (method === 'POST') {
+        if (endpoint.includes('/fish/identify')) {
+          // For fish identify, we need to send FormData with a file
+          const formData = new FormData()
+          // Create a simple test image (1x1 pixel PNG)
+          const testImageBlob = new Blob(['iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=='], { type: 'image/png' })
+          formData.append('image', testImageBlob, 'test.png')
+          body = formData
+          // Don't set Content-Type for FormData - browser will set it with boundary
+        } else {
+          // For other POST endpoints, send JSON
+          body = JSON.stringify({
+            email: 'test@example.com',
+            password: 'test123',
+            ...(endpoint.includes('/fish/save') && { identification_id: 'test_id', notes: 'test' }),
+            ...(endpoint.includes('/auth/verify') && { token: 'test_token' })
+          })
+          headers['Content-Type'] = 'application/json'
+        }
+      }
 
       const response = await fetch(`${FLASK_API_URL}${endpoint}`, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body,
         signal: AbortSignal.timeout(10000),
       })
