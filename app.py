@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 from fishid_client import predict          # wrapper you already have
 from fish_meta.fish_meta import get as meta_for  # enriched facts
+from fish_fallback_data import get_fallback_data  # fallback data
 
 # ---------------------------------------------------------------
 load_dotenv()                               # loads Fishial + Groq keys
@@ -199,20 +200,22 @@ def identify_fish():
         scientific = out["species"]
         confidence = int(out["prob"] * 100)
         meta = meta_for(scientific)
+        fallback = get_fallback_data(scientific)
 
-        # Format response for frontend
+        # Format response for frontend with fallback information
         result = {
             'id': f'identification_{datetime.utcnow().timestamp()}',
             'scientific_name': scientific,
             'common_name': meta.get('common_name', ''),
             'confidence': confidence,
-            'description': meta.get('description', ''),
-            'habitat': meta.get('habitat', ''),
-            'distribution': meta.get('distribution', ''),
-            'max_length_cm': meta.get('max_length_cm', ''),
-            'conservation_status': meta.get('conservation_status', ''),
-            'fun_facts': meta.get('fun_facts', ''),
-            'reference_image': meta.get('reference_image', '')
+            'description': meta.get('intro', 'No description available'),
+            'habitat': meta.get('habitat') or fallback.get('habitat', 'Habitat information not available'),
+            'distribution': meta.get('distribution') or fallback.get('distribution', 'Distribution information not available'),
+            'max_length_cm': meta.get('max_length_cm') or fallback.get('max_length_cm', ''),
+            'conservation_status': meta.get('iucn_status') or fallback.get('conservation_status', ''),
+            'fun_facts': meta.get('fun_facts') or fallback.get('fun_facts', 'Fun facts not available'),
+            'reference_image': meta.get('picture', ''),
+            'visual_cues': meta.get('visual_cues') or fallback.get('visual_cues', 'Visual identification cues not available')
         }
 
         return jsonify({
