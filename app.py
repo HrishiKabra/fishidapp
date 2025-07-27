@@ -17,8 +17,21 @@ load_dotenv()                               # loads Fishial + Groq keys
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "fishid-dev")
 
-# Enable CORS for all routes
-CORS(app, origins=["http://localhost:3000", "https://fishid-landing.vercel.app"])
+# Enable CORS for all routes with more permissive settings
+CORS(app, 
+     origins=["http://localhost:3000", "https://fishid-landing.vercel.app", "https://fishid.vercel.app"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+     allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+     supports_credentials=True)
+
+# Add CORS headers to all responses
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
 
 ALLOWED_EXT = {"jpg","jpeg","png","gif","bmp","webp","tiff","heic"}
 def _ext_ok(name): return "." in name and name.rsplit(".",1)[1].lower() in ALLOWED_EXT
