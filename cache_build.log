@@ -1,0 +1,74 @@
+[2025-07-28 03:18:38] 🐟 Starting comprehensive fish cache build...
+[2025-07-28 03:18:38] ============================================================
+[2025-07-28 03:18:38] 📊 Statistics:
+[2025-07-28 03:18:38]    • Total species in catalog: 631
+[2025-07-28 03:18:38]    • Already cached: 109
+[2025-07-28 03:18:38]    • Batch size: 25
+[2025-07-28 03:18:38] 
+📦 Processing batch 1/26
+[2025-07-28 03:18:38] Species 1 to 25
+[2025-07-28 03:18:38] [1/631] ⏭️  Skipping Abramis brama (already cached)
+[2025-07-28 03:18:38] [2/631] 🔄 Processing: Abudefduf saxatilis (Sergeant-major)
+[2025-07-28 03:18:39]   ✅ Cached successfully
+[2025-07-28 03:18:39] [3/631] 🔄 Processing: Abudefduf sordidus (Blackspot sergeant)
+[2025-07-28 03:18:40]   ✅ Cached successfully
+[2025-07-28 03:18:40] [4/631] ⏭️  Skipping Acanthocybium solandri (already cached)
+[2025-07-28 03:18:40] [5/631] 🔄 Processing: Acanthopagrus australis (Yellowfin bream)
+[2025-07-28 03:18:41]   ✅ Cached successfully
+[2025-07-28 03:18:42] [6/631] ⏭️  Skipping Acanthopagrus butcheri (already cached)
+[2025-07-28 03:18:42] [7/631] 🔄 Processing: Acanthopagrus latus (Yellowfin seabream)
+[2025-07-28 03:18:43]   ✅ Cached successfully
+[2025-07-28 03:18:43] [8/631] 🔄 Processing: Acanthostracion quadricornis (Scrawled cowfish)
+[2025-07-28 03:18:44]   ✅ Cached successfully
+[2025-07-28 03:18:45] [9/631] 🔄 Processing: Acanthurus chirurgus (Doctorfish)
+[2025-07-28 03:18:46]   ✅ Cached successfully
+[2025-07-28 03:18:46] [10/631] 🔄 Processing: Acanthurus coeruleus (Blue tang surgeonfish)
+[2025-07-28 03:18:47]   ✅ Cached successfully
+[2025-07-28 03:18:47] [11/631] 🔄 Processing: Acanthurus dussumieri (Eyestripe surgeonfish)
+[2025-07-28 03:18:48]   ✅ Cached successfully
+[2025-07-28 03:18:48] [12/631] ⏭️  Skipping Achoerodus viridis (already cached)
+[2025-07-28 03:18:48] [13/631] 🔄 Processing: Acipenser fulvescens (Lake sturgeon)
+[2025-07-28 03:18:49]   ✅ Cached successfully
+[2025-07-28 03:18:50] [14/631] 🔄 Processing: Acipenser transmontanus (White sturgeon)
+[2025-07-28 03:18:51]   ✅ Cached successfully
+[2025-07-28 03:18:51] [15/631] ⏭️  Skipping Acroteriobatus annulatus (already cached)
+[2025-07-28 03:18:51] [16/631] 🔄 Processing: Aetobatus narinari (Whitespotted eagle ray)
+[2025-07-28 03:18:52]   ✅ Cached successfully
+[2025-07-28 03:18:52] [17/631] 🔄 Processing: Albula vulpes (Bonefish)
+[2025-07-28 03:18:53]   ✅ Cached successfully
+[2025-07-28 03:18:54] [18/631] 🔄 Processing: Aldrichetta forsteri (Yellow-eye mullet)
+[2025-07-28 03:18:55]   ✅ Cached successfully
+[2025-07-28 03:18:55] [19/631] 🔄 Processing: Alectis ciliaris (African pompano)
+[2025-07-28 03:18:56]   ✅ Cached successfully
+[2025-07-28 03:18:56] [20/631] 🔄 Processing: Alopias vulpinus (Thresher)
+[2025-07-28 03:18:57]   ✅ Cached successfully
+[2025-07-28 03:18:58] [21/631] 🔄 Processing: Alosa chrysochloris (Skipjack shad)
+[2025-07-28 03:18:59]   ✅ Cached successfully
+[2025-07-28 03:18:59] [22/631] 🔄 Processing: Alosa pseudoharengus (Alewife)
+[2025-07-28 03:19:00]   ✅ Cached successfully
+[2025-07-28 03:19:00] [23/631] 🔄 Processing: Alosa sapidissima (American shad)
+[2025-07-28 03:19:01]   ✅ Cached successfully
+[2025-07-28 03:19:02] [24/631] 🔄 Processing: Aluterus monoceros (Unicorn leatherjacket filefish)
+[2025-07-28 03:19:03]   ✅ Cached successfully
+[2025-07-28 03:19:03] [25/631] 🔄 Processing: Aluterus schoepfii (Orange filefish)
+[2025-07-28 03:19:04]   ✅ Cached successfully
+[2025-07-28 03:19:05] 📦 Batch complete: 25 cached, 0 errors in 27.1s
+[2025-07-28 03:19:05] 📈 Progress: 4.0% (25/631)
+[2025-07-28 03:19:05] ⏱️  Elapsed: 0.5m, Estimated remaining: 11.0m
+[2025-07-28 03:19:05] ⏳ Pausing for 3 seconds...
+[2025-07-28 03:19:08] 
+📦 Processing batch 2/26
+[2025-07-28 03:19:08] Species 26 to 50
+[2025-07-28 03:19:08] [26/631] 🔄 Processing: Aluterus scriptus (Scribbled leatherjacket filefish)
+[2025-07-28 03:19:09]   ✅ Cached successfully
+[2025-07-28 03:19:09] [27/631] 🔄 Processing: Ambloplites rupestris (Rock bass)
+[2025-07-28 03:19:10]   ✅ Cached successfully
+[2025-07-28 03:19:10] [28/631] 🔄 Processing: Ameiurus catus (White catfish)
+[2025-07-28 03:19:11]   ✅ Cached successfully
+[2025-07-28 03:19:12] [29/631] 🔄 Processing: Ameiurus melas (Black bullhead)
+[2025-07-28 03:19:13]   ✅ Cached successfully
+[2025-07-28 03:19:13] [30/631] 🔄 Processing: Ameiurus natalis (Yellow bullhead)
+[2025-07-28 03:19:14]   ✅ Cached successfully
+[2025-07-28 03:19:14] [31/631] 🔄 Processing: Ameiurus nebulosus (Brown bullhead)
+[2025-07-28 03:19:15]   ✅ Cached successfully
+[2025-07-28 03:19:16] [32/631] 🔄 Processing: Amia calva (Bowfin)
