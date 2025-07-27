@@ -273,8 +273,24 @@ export const healthApi = {
 
   async testEndpoint(endpoint: string) {
     try {
+      // Determine the HTTP method based on the endpoint
+      const method = endpoint.includes('/auth/') || endpoint.includes('/fish/identify') || endpoint.includes('/fish/save') ? 'POST' : 'GET'
+      
+      // Prepare request body for POST requests
+      const body = method === 'POST' ? JSON.stringify({
+        email: 'test@example.com',
+        password: 'test123',
+        ...(endpoint.includes('/fish/identify') && { file: 'test.jpg' }),
+        ...(endpoint.includes('/fish/save') && { identification_id: 'test_id', notes: 'test' }),
+        ...(endpoint.includes('/auth/verify') && { token: 'test_token' })
+      }) : undefined
+
       const response = await fetch(`${FLASK_API_URL}${endpoint}`, {
-        method: "GET",
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body,
         signal: AbortSignal.timeout(10000),
       })
 
@@ -292,12 +308,14 @@ export const healthApi = {
         ok: response.ok,
         data,
         contentType,
+        method,
       }
     } catch (error) {
       return {
         status: 0,
         ok: false,
         error: error instanceof Error ? error.message : "Unknown error",
+        method: 'GET',
       }
     }
   },
