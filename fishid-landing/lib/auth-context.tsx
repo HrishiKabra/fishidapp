@@ -15,7 +15,7 @@ interface User {
 interface AuthContextType {
   user: User | null
   login: (email: string, password: string) => Promise<void>
-  signup: (email: string, password: string, name: string) => Promise<void>
+  signup: (email: string, password: string, name: string, fishIcon?: string) => Promise<void>
   logout: () => Promise<void>
   updateFishIcon: (fishIcon: string) => Promise<void>
   checkAuthStatus: () => Promise<boolean>
@@ -133,10 +133,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (response.success && response.user && response.token) {
         console.log("✅ Login successful:", response.user)
 
-        // Create user object with avatar
+        // Create user object with fish_icon
         const userData = {
           ...response.user,
-          avatar: response.user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${response.user.email}`,
+          fish_icon: response.user.fish_icon || "/images/fish-icons/001-gold-fish.png",
         }
 
         setUser(userData)
@@ -156,19 +156,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const signup = async (email: string, password: string, name: string) => {
+  const signup = async (email: string, password: string, name: string, fishIcon?: string) => {
     setLoading(true)
     try {
       console.log("📝 Attempting signup for:", email)
-      const response = await authApi.signup(email, password, name)
+      const response = await authApi.signup(email, password, name, fishIcon)
 
       if (response.success && response.user && response.token) {
         console.log("✅ Signup successful:", response.user)
 
-        // Create user object with avatar
+        // Create user object with fish_icon
         const userData = {
           ...response.user,
-          avatar: response.user.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${response.user.email}`,
+          fish_icon: response.user.fish_icon || "/images/fish-icons/001-gold-fish.png",
         }
 
         setUser(userData)

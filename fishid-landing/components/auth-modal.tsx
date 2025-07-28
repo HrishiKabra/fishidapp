@@ -30,7 +30,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [showBackendStatus, setShowBackendStatus] = useState(false)
   const [selectedIcon, setSelectedIcon] = useState("/images/fish-icons/001-gold-fish.png")
   const [showIconSelector, setShowIconSelector] = useState(false)
-  const { login } = useAuth()
+  const { login, signup } = useAuth()
 
   const resetForm = () => {
     setName("")
@@ -57,25 +57,19 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
     try {
       if (isLogin) {
-        const result = await authApi.login(email, password)
-        if (result.success) {
-          login(result.user, result.token)
-          setSuccess("Login successful!")
-          setTimeout(() => {
-            onClose()
-            resetForm()
-          }, 1000)
-        }
+        await login(email, password)
+        setSuccess("Login successful!")
+        setTimeout(() => {
+          onClose()
+          resetForm()
+        }, 1000)
       } else {
-        const result = await authApi.signup(email, password, name, selectedIcon)
-        if (result.success) {
-          login(result.user, result.token)
-          setSuccess("Account created successfully!")
-          setTimeout(() => {
-            onClose()
-            resetForm()
-          }, 1000)
-        }
+        await signup(email, password, name, selectedIcon)
+        setSuccess("Account created successfully!")
+        setTimeout(() => {
+          onClose()
+          resetForm()
+        }, 1000)
       }
     } catch (error: any) {
       if (error.message?.includes("rate limit")) {

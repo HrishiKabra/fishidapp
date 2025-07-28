@@ -135,9 +135,6 @@ export function FishIconSelector({ isOpen, onClose, onSelect, currentIcon, title
                     className="w-full h-full object-contain"
                   />
                 </div>
-                <p className="text-xs text-center mt-1 text-gray-600 truncate">
-                  {icon.name}
-                </p>
               </button>
             ))}
           </div>
