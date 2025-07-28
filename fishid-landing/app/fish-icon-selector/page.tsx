@@ -224,9 +224,6 @@ export default function FishIconSelectorPage() {
                   </div>
                 )}
               </div>
-              <p className="text-xs text-gray-600 mt-2 text-center truncate">
-                {icon.name}
-              </p>
             </button>
           ))}
         </div>

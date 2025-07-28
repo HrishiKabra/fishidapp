@@ -182,11 +182,6 @@ export function FishIconSelector({ isOpen, onClose, onSelect, currentIcon, title
                     </div>
                   )}
                 </div>
-                {isMobile && (
-                  <p className="text-xs text-gray-600 mt-1 text-center truncate">
-                    {icon.name}
-                  </p>
-                )}
               </button>
             ))}
           </div>

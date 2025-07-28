@@ -111,15 +111,6 @@ export function HamburgerMenu({
                       <span>Change Fish Icon</span>
                     </button>
 
-                    <Link
-                      href="/fish-icon-selector"
-                      className="flex items-center space-x-3 px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                      onClick={() => setOpen(false)}
-                    >
-                      <Fish className="w-4 h-4" />
-                      <span>Fish Icon Gallery</span>
-                    </Link>
-
                     <hr className="my-2" />
 
                     <button
