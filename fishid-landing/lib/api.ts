@@ -292,12 +292,19 @@ export const healthApi = {
       let headers: any = {}
       
       if (method === 'POST') {
-        // For POST endpoints, send JSON
+        // For POST endpoints, send JSON with unique test data
+        const timestamp = Date.now()
+        const testEmail = `test${timestamp}@example.com`
+        const testPassword = 'SecurePass123!'
+        
         body = JSON.stringify({
-          email: 'test@example.com',
-          password: 'test123',
+          email: testEmail,
+          password: testPassword,
+          username: `testuser${timestamp}`,
           ...(endpoint.includes('/fish/save') && { identification_id: 'test_id', notes: 'test' }),
-          ...(endpoint.includes('/auth/verify') && { token: 'test_token' })
+          ...(endpoint.includes('/auth/verify') && { token: 'test_token' }),
+          // For login endpoint, use the same email but without username
+          ...(endpoint.includes('/auth/login') && { email: testEmail, password: testPassword })
         })
         headers['Content-Type'] = 'application/json'
       }
