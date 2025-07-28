@@ -45,11 +45,44 @@ def _groq(prompt, mx=60, T=0.7):
     except Exception: pass
     return ""
 
-def _visual(name): return _groq(
-    f"List 3-4 visual identification cues for {name} in this exact format:\n• **Feature name**: Brief description.\n• **Feature name**: Brief description.\n• **Feature name**: Brief description.",80)
+def _visual(name): 
+    prompt = f"""List exactly 3 visual identification cues for {name}. Use this EXACT format (no extra text, no numbering):
+
+• **Feature name**: Brief description.
+• **Feature name**: Brief description.  
+• **Feature name**: Brief description.
+
+Do not add any introductory text or explanations."""
+    return _groq(prompt, 120)
 
 def _fun(name):    return _groq(
     f"Provide one fun trivia fact (max 25 words) about the fish species {name}.",50,0.8)
+
+def _clean_visual_cues(text: str) -> str:
+    """Clean up malformed visual cues text"""
+    if not text:
+        return ""
+    
+    # Remove any introductory text
+    lines = text.split('\n')
+    cleaned_lines = []
+    
+    for line in lines:
+        line = line.strip()
+        if line.startswith('•') or line.startswith('-'):
+            # Ensure proper formatting
+            if '**' in line and ':' in line:
+                cleaned_lines.append(line)
+            else:
+                # Try to fix malformed lines
+                if '**' in line:
+                    parts = line.split('**')
+                    if len(parts) >= 3:
+                        feature = parts[1].strip()
+                        description = parts[2].replace(':', '').strip()
+                        cleaned_lines.append(f"• **{feature}**: {description}")
+    
+    return '\n'.join(cleaned_lines) if cleaned_lines else text
 
 # ---------- species catalog (static JSON from Fishial docs) ----
 def _catalog():
@@ -71,7 +104,8 @@ def get(name: str):
             rec = {**_fishbase(name), **_wiki(name), "_ts": time.time()}
 
         if "visual_cues" not in rec:
-            rec["visual_cues"] = _visual(name)
+            visual_cues = _visual(name)
+            rec["visual_cues"] = _clean_visual_cues(visual_cues)
         if "fun_facts" not in rec:
             rec["fun_facts"] = _fun(name)
 
