@@ -46,7 +46,7 @@ def _groq(prompt, mx=60, T=0.7):
     return ""
 
 def _visual(name): return _groq(
-    f"Give three very short bullet-point visual cues that help identify the fish species {name}.",60)
+    f"List 3-4 visual identification cues for {name} in this exact format:\n• **Feature name**: Brief description.\n• **Feature name**: Brief description.\n• **Feature name**: Brief description.",80)
 
 def _fun(name):    return _groq(
     f"Provide one fun trivia fact (max 25 words) about the fish species {name}.",50,0.8)
