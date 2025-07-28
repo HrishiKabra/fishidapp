@@ -7,6 +7,7 @@ import Link from "next/link"
 
 import { AuthModal } from "@/components/auth-modal"
 import { UserDropdown } from "@/components/user-dropdown"
+import { HamburgerMenu } from "@/components/hamburger-menu"
 import { useAuth } from "@/lib/auth-context"
 import { useState } from "react"
 
@@ -35,6 +36,7 @@ export default function SpeciesListPage() {
               />
             </Link>
           </div>
+          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-8">
             <button onClick={scrollToAbout} className="text-white hover:text-[#2e9eb3] transition-colors">
               About Us
@@ -57,6 +59,8 @@ export default function SpeciesListPage() {
               </Button>
             )}
           </nav>
+          {/* Mobile Hamburger Menu */}
+          <HamburgerMenu onAboutClick={scrollToAbout} onLoginClick={() => setShowAuthModal(true)} />
         </div>
       </header>
 

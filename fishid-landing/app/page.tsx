@@ -167,7 +167,7 @@ export default function FishIDLanding() {
             )}
           </nav>
           {/* Mobile Hamburger Menu */}
-          <HamburgerMenu onAboutClick={scrollToAbout} />
+          <HamburgerMenu onAboutClick={scrollToAbout} onLoginClick={() => setShowAuthModal(true)} />
         </div>
       </header>
 

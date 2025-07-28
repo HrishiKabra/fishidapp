@@ -9,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { ArrowLeft, MapPin, Ruler, Waves, Lightbulb, ExternalLink, Camera, Heart, Bug, Eye } from "lucide-react"
 import { fishApi, ApiError } from "@/lib/api"
 import { useAuth } from "@/lib/auth-context"
+import { HamburgerMenu } from "@/components/hamburger-menu"
+import { AuthModal } from "@/components/auth-modal"
 import Link from "next/link"
 
 const getStatusColor = (status: string) => {
@@ -62,6 +64,7 @@ export default function ResultsPage() {
   const [saveMessage, setSaveMessage] = useState("")
   const [showDebug, setShowDebug] = useState(false)
   const [showFullDescription, setShowFullDescription] = useState(false)
+  const [showAuthModal, setShowAuthModal] = useState(false)
   const { user } = useAuth()
 
   useEffect(() => {
@@ -156,6 +159,7 @@ export default function ResultsPage() {
               />
             </Link>
           </div>
+          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link href="/" className="text-white hover:text-[#2e9eb3] transition-colors">
               New Search
@@ -182,6 +186,8 @@ export default function ResultsPage() {
               </Button>
             )}
           </nav>
+          {/* Mobile Hamburger Menu */}
+          <HamburgerMenu onAboutClick={scrollToAbout} onLoginClick={() => setShowAuthModal(true)} />
         </div>
       </header>
 
@@ -475,6 +481,9 @@ export default function ResultsPage() {
           </div>
         </div>
       )}
+
+      {/* Auth Modal */}
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </div>
   )
 }
