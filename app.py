@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from fishid_client import predict          # wrapper you already have
 from fish_meta.fish_meta import get as meta_for  # enriched facts
 from fish_fallback_data import get_fallback_data  # fallback data
+from auth_system import auth_system  # secure authentication system
 
 # ---------------------------------------------------------------
 load_dotenv()                               # loads Fishial + Groq keys
@@ -77,83 +78,244 @@ def root():
 def register():
     try:
         data = request.get_json()
-        # TODO: Implement user registration logic
-        # For now, return a mock response
-        return jsonify({
-            'success': True,
-            'message': 'User registered successfully',
-            'user': {
-                'id': 'user_123',
-                'email': data.get('email', ''),
-                'username': data.get('username', '')
-            }
-        }), 201
+        
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'No data provided'
+            }), 400
+        
+        email = data.get('email', '').strip().lower()
+        username = data.get('username', '').strip()
+        password = data.get('password', '')
+        
+        # Validate required fields
+        if not email or not username or not password:
+            return jsonify({
+                'success': False,
+                'error': 'Email, username, and password are required'
+            }), 400
+        
+        # Register user with secure authentication system
+        success, message, result = auth_system.register_user(email, username, password)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': message,
+                'token': result['token'],
+                'user': result['user']
+            }), 201
+        else:
+            return jsonify({
+                'success': False,
+                'error': message
+            }), 400
+            
     except Exception as e:
         return jsonify({
             'success': False,
             'error': 'Registration failed',
             'details': str(e)
-        }), 400
+        }), 500
 
 @app.route('/api/auth/login', methods=['POST'])
 def login():
     try:
         data = request.get_json()
-        # TODO: Implement user login logic
-        # For now, return a mock response
-        return jsonify({
-            'success': True,
-            'message': 'Login successful',
-            'token': 'mock_jwt_token_123',
-            'user': {
-                'id': 'user_123',
-                'email': data.get('email', ''),
-                'username': data.get('username', '')
-            }
-        }), 200
+        
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'No data provided'
+            }), 400
+        
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
+        
+        # Validate required fields
+        if not email or not password:
+            return jsonify({
+                'success': False,
+                'error': 'Email and password are required'
+            }), 400
+        
+        # Get client IP for security monitoring
+        ip_address = request.remote_addr
+        
+        # Login user with secure authentication system
+        success, message, result = auth_system.login_user(email, password, ip_address)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': message,
+                'token': result['token'],
+                'user': result['user']
+            }), 200
+        else:
+            return jsonify({
+                'success': False,
+                'error': message
+            }), 401
+            
     except Exception as e:
         return jsonify({
             'success': False,
             'error': 'Login failed',
             'details': str(e)
-        }), 401
+        }), 500
 
 @app.route('/api/auth/verify', methods=['POST'])
 def verify_token():
     try:
         data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'No data provided'
+            }), 400
+        
         token = data.get('token')
-        # TODO: Implement JWT token verification
-        # For now, return a mock response
-        return jsonify({
-            'success': True,
-            'valid': True,
-            'user': {
-                'id': 'user_123',
-                'email': 'user@example.com'
-            }
-        }), 200
+        
+        if not token:
+            return jsonify({
+                'success': False,
+                'error': 'Token is required'
+            }), 400
+        
+        # Verify token with secure authentication system
+        success, message, result = auth_system.verify_token(token)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'valid': True,
+                'message': message,
+                'user': result['user']
+            }), 200
+        else:
+            return jsonify({
+                'success': False,
+                'valid': False,
+                'error': message
+            }), 401
+            
     except Exception as e:
         return jsonify({
             'success': False,
             'error': 'Token verification failed',
             'details': str(e)
-        }), 401
+        }), 500
 
 @app.route('/api/auth/logout', methods=['POST'])
 def logout():
     try:
-        # TODO: Implement logout logic (invalidate token, etc.)
-        return jsonify({
-            'success': True,
-            'message': 'Logout successful'
-        }), 200
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'No data provided'
+            }), 400
+        
+        token = data.get('token')
+        
+        if not token:
+            return jsonify({
+                'success': False,
+                'error': 'Token is required'
+            }), 400
+        
+        # Logout user with secure authentication system
+        success, message = auth_system.logout_user(token)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': message
+            }), 200
+        else:
+            return jsonify({
+                'success': False,
+                'error': message
+            }), 400
+            
     except Exception as e:
         return jsonify({
             'success': False,
             'error': 'Logout failed',
             'details': str(e)
-        }), 400
+        }), 500
+
+@app.route('/api/auth/profile', methods=['GET'])
+def get_profile():
+    try:
+        # Get token from Authorization header
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Bearer '):
+            return jsonify({
+                'success': False,
+                'error': 'Authorization header required'
+            }), 401
+        
+        token = auth_header.split(' ')[1]
+        
+        # Verify token and get user profile
+        success, message, result = auth_system.verify_token(token)
+        
+        if not success:
+            return jsonify({
+                'success': False,
+                'error': message
+            }), 401
+        
+        user_id = result['user']['id']
+        profile = auth_system.get_user_profile(user_id)
+        
+        if profile:
+            return jsonify({
+                'success': True,
+                'profile': profile
+            }), 200
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Profile not found'
+            }), 404
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'Failed to get profile',
+            'details': str(e)
+        }), 500
+
+@app.route('/api/auth/reset', methods=['POST'])
+def reset_auth_data():
+    """Clear all authentication data (for testing/reset)"""
+    try:
+        # This should be protected in production - only allow in development
+        if os.getenv('FLASK_ENV') != 'development':
+            return jsonify({
+                'success': False,
+                'error': 'Reset not allowed in production'
+            }), 403
+        
+        auth_system.clear_all_users()
+        
+        return jsonify({
+            'success': True,
+            'message': 'All authentication data cleared'
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'Reset failed',
+            'details': str(e)
+        }), 500
 
 # Fish identification routes
 @app.route('/api/fish/identify', methods=['POST'])

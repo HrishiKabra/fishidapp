@@ -5,4 +5,7 @@ landingai==0.3.49
 pillow
 python-dotenv
 requests>=2.32
+PyJWT==2.8.0
+bcrypt==4.1.2
+python-dotenv==1.0.0
 - fish-identification @ git+https://github.com/fishial/fish-identification.git
