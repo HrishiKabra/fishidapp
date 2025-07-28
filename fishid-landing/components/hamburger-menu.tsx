@@ -24,7 +24,7 @@ export function HamburgerMenu({
     <div className="md:hidden">
       <Button
         variant="ghost"
-        className="text-[#0e496c] hover:bg-[#0e496c]/10 p-2"
+        className="text-white hover:bg-white/10 p-2"
         onClick={() => setOpen(true)}
         aria-label="Open menu"
       >
