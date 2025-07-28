@@ -86,7 +86,7 @@ def register():
             }), 400
         
         email = data.get('email', '').strip().lower()
-        username = data.get('username', '').strip()
+        username = data.get('username', data.get('name', '')).strip()  # Support both 'username' and 'name'
         password = data.get('password', '')
         
         # Validate required fields
@@ -104,7 +104,12 @@ def register():
                 'success': True,
                 'message': message,
                 'token': result['token'],
-                'user': result['user']
+                'user': {
+                    'id': result['user']['id'],
+                    'email': result['user']['email'],
+                    'username': result['user']['username'],
+                    'name': result['user']['username']  # Include 'name' for frontend compatibility
+                }
             }), 201
         else:
             return jsonify({
@@ -151,7 +156,12 @@ def login():
                 'success': True,
                 'message': message,
                 'token': result['token'],
-                'user': result['user']
+                'user': {
+                    'id': result['user']['id'],
+                    'email': result['user']['email'],
+                    'username': result['user']['username'],
+                    'name': result['user']['username']  # Include 'name' for frontend compatibility
+                }
             }), 200
         else:
             return jsonify({
@@ -435,5 +445,5 @@ def save_to_log():
         }), 500
 
 if __name__ == "__main__":
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 5001))
     app.run(debug=False, host='0.0.0.0', port=port)
