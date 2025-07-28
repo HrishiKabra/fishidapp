@@ -271,6 +271,100 @@ export const healthApi = {
     }
   },
 
+  async testAllEndpoints() {
+    const results: any = {}
+    const timestamp = Date.now()
+    const testEmail = `test${timestamp}@example.com`
+    const testPassword = 'SecurePass123!'
+    const testUsername = `testuser${timestamp}`
+    
+    try {
+      // Test 1: Register a new user
+      console.log('Testing registration...')
+      const registerResponse = await fetch(`${FLASK_API_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: testEmail,
+          password: testPassword,
+          username: testUsername
+        }),
+        signal: AbortSignal.timeout(10000),
+      })
+      
+      results.register = {
+        status: registerResponse.status,
+        ok: registerResponse.ok,
+        data: await registerResponse.json()
+      }
+      
+      // Test 2: Login with the same credentials
+      console.log('Testing login...')
+      const loginResponse = await fetch(`${FLASK_API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: testEmail,
+          password: testPassword
+        }),
+        signal: AbortSignal.timeout(10000),
+      })
+      
+      const loginData = await loginResponse.json()
+      results.login = {
+        status: loginResponse.status,
+        ok: loginResponse.ok,
+        data: loginData
+      }
+      
+      // Test 3: Verify token (if login was successful)
+      if (loginData.success && loginData.token) {
+        console.log('Testing token verification...')
+        const verifyResponse = await fetch(`${FLASK_API_URL}/api/auth/verify`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: loginData.token
+          }),
+          signal: AbortSignal.timeout(10000),
+        })
+        
+        results.verify = {
+          status: verifyResponse.status,
+          ok: verifyResponse.ok,
+          data: await verifyResponse.json()
+        }
+      } else {
+        results.verify = {
+          status: 401,
+          ok: false,
+          data: { error: 'No valid token to test' }
+        }
+      }
+      
+      // Test 4: Health check
+      console.log('Testing health check...')
+      const healthResponse = await fetch(`${FLASK_API_URL}/health`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(10000),
+      })
+      
+      results.health = {
+        status: healthResponse.status,
+        ok: healthResponse.ok,
+        data: await healthResponse.json()
+      }
+      
+      return results
+      
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error.message : "Test failed",
+        results
+      }
+    }
+  },
+
   async testEndpoint(endpoint: string) {
     try {
       // Skip fish identify endpoint test since it requires a real fish image
@@ -311,6 +405,8 @@ export const healthApi = {
             password: testPassword
           })
         } else if (endpoint.includes('/auth/verify')) {
+          // For token verification, we need to get a real token first
+          // This will be handled by the test flow
           body = JSON.stringify({
             token: 'test_token'
           })

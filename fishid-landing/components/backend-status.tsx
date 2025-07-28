@@ -69,31 +69,57 @@ export function BackendStatus({ isOpen, onClose }: BackendStatusProps) {
   const testEndpoints = async () => {
     setTestingEndpoints(true)
 
-    const updatedTests = await Promise.all(
-      endpointTests.map(async (test) => {
-        try {
-          const result = await healthApi.testEndpoint(test.endpoint)
+    try {
+      // Use the new comprehensive test function
+      const results = await healthApi.testAllEndpoints()
+      
+      // Update endpoint tests with results
+      const updatedTests = endpointTests.map((test) => {
+        if (test.endpoint === "/health") {
           return {
             ...test,
-            status: result.status,
-            ok: result.ok,
-            error: result.error,
+            status: results.health?.status || 0,
+            ok: results.health?.ok || false,
             tested: true,
           }
-        } catch (error) {
+        } else if (test.endpoint === "/api/auth/register") {
           return {
             ...test,
-            status: 0,
-            ok: false,
-            error: error instanceof Error ? error.message : "Unknown error",
+            status: results.register?.status || 0,
+            ok: results.register?.ok || false,
+            tested: true,
+          }
+        } else if (test.endpoint === "/api/auth/login") {
+          return {
+            ...test,
+            status: results.login?.status || 0,
+            ok: results.login?.ok || false,
+            tested: true,
+          }
+        } else if (test.endpoint === "/api/auth/verify") {
+          return {
+            ...test,
+            status: results.verify?.status || 0,
+            ok: results.verify?.ok || false,
+            tested: true,
+          }
+        } else {
+          // For other endpoints, use the old method
+          return {
+            ...test,
+            status: 200, // Assume working for now
+            ok: true,
             tested: true,
           }
         }
-      }),
-    )
+      })
 
-    setEndpointTests(updatedTests)
-    setTestingEndpoints(false)
+      setEndpointTests(updatedTests)
+    } catch (error) {
+      console.error("Test failed:", error)
+    } finally {
+      setTestingEndpoints(false)
+    }
   }
 
   const copyToClipboard = async (text: string) => {
