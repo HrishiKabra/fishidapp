@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { User, LogOut, Fish, Settings, ChevronDown, TestTube } from "lucide-react"
+import { User, LogOut, Fish, Settings, ChevronDown } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { BackendStatus } from "./backend-status"
 import Image from "next/image"
@@ -98,14 +98,6 @@ export function UserDropdown() {
                     setIsOpen(false)
                     setShowBackendStatus(true)
                   }}
-                >
-                  <TestTube className="w-4 h-4" />
-                  <span>Backend Status</span>
-                </button>
-
-                <button
-                  className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors w-full text-left"
-                  onClick={() => setIsOpen(false)}
                 >
                   <Settings className="w-4 h-4" />
                   <span>Settings</span>
