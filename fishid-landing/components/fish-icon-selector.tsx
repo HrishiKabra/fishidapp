@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { X, Search, Fish } from "lucide-react"
+import { X, Search, Fish, Check } from "lucide-react"
 
 interface FishIconSelectorProps {
   isOpen: boolean
@@ -72,10 +72,21 @@ const fishIcons = [
 export function FishIconSelector({ isOpen, onClose, onSelect, currentIcon, title = "Choose Your Fish Icon" }: FishIconSelectorProps) {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedIcon, setSelectedIcon] = useState<string | undefined>(currentIcon)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     setSelectedIcon(currentIcon)
   }, [currentIcon])
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const filteredIcons = fishIcons.filter(icon =>
     icon.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -91,17 +102,22 @@ export function FishIconSelector({ isOpen, onClose, onSelect, currentIcon, title
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <CardHeader className="relative">
-          <Button variant="ghost" size="icon" className="absolute right-2 top-2" onClick={onClose}>
+      <Card className={`w-full ${isMobile ? 'max-w-full h-full max-h-full' : 'max-w-4xl max-h-[90vh]'} overflow-y-auto`}>
+        <CardHeader className="relative sticky top-0 bg-white z-10 border-b">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="absolute right-2 top-2" 
+            onClick={onClose}
+          >
             <X className="w-4 h-4" />
           </Button>
-          <CardTitle className="text-xl text-center flex items-center justify-center space-x-2">
+          <CardTitle className="text-xl text-center flex items-center justify-center space-x-2 pr-8">
             <Fish className="w-5 h-5 text-[#2e9eb3]" />
             <span>{title}</span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-4">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -113,20 +129,46 @@ export function FishIconSelector({ isOpen, onClose, onSelect, currentIcon, title
             />
           </div>
 
-          {/* Icons Grid */}
-          <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3">
+          {/* Current Selection - Mobile Optimized */}
+          {selectedIcon && (
+            <div className="bg-gray-50 rounded-lg p-3 mb-4">
+              <p className="text-sm font-medium text-gray-700 mb-2">Current Selection:</p>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 relative bg-white rounded-lg p-1">
+                  <Image
+                    src={selectedIcon}
+                    alt="Selected icon"
+                    width={32}
+                    height={32}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <span className="text-sm text-gray-600 flex-1">
+                  {fishIcons.find(icon => icon.path === selectedIcon)?.name}
+                </span>
+                <Check className="w-4 h-4 text-green-500" />
+              </div>
+            </div>
+          )}
+
+          {/* Icons Grid - Responsive */}
+          <div className={`grid gap-3 ${
+            isMobile 
+              ? 'grid-cols-4 sm:grid-cols-5' 
+              : 'grid-cols-6 md:grid-cols-8 lg:grid-cols-10'
+          }`}>
             {filteredIcons.map((icon) => (
               <button
                 key={icon.id}
                 onClick={() => handleSelect(icon.path)}
-                className={`p-2 rounded-lg border-2 transition-all hover:scale-105 ${
+                className={`relative p-3 rounded-lg border-2 transition-all hover:scale-105 active:scale-95 ${
                   selectedIcon === icon.path
                     ? "border-[#2e9eb3] bg-[#2e9eb3]/10"
                     : "border-gray-200 hover:border-[#2e9eb3]/50"
                 }`}
                 title={icon.name}
               >
-                <div className="w-12 h-12 relative mx-auto">
+                <div className={`relative mx-auto ${isMobile ? 'w-12 h-12' : 'w-12 h-12'}`}>
                   <Image
                     src={icon.path}
                     alt={icon.name}
@@ -134,7 +176,17 @@ export function FishIconSelector({ isOpen, onClose, onSelect, currentIcon, title
                     height={48}
                     className="w-full h-full object-contain"
                   />
+                  {selectedIcon === icon.path && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#2e9eb3] rounded-full flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                  )}
                 </div>
+                {isMobile && (
+                  <p className="text-xs text-gray-600 mt-1 text-center truncate">
+                    {icon.name}
+                  </p>
+                )}
               </button>
             ))}
           </div>
@@ -146,24 +198,15 @@ export function FishIconSelector({ isOpen, onClose, onSelect, currentIcon, title
             </div>
           )}
 
-          {/* Current Selection */}
-          {selectedIcon && (
-            <div className="border-t pt-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">Current Selection:</p>
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 relative">
-                  <Image
-                    src={selectedIcon}
-                    alt="Selected icon"
-                    width={32}
-                    height={32}
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <span className="text-sm text-gray-600">
-                  {fishIcons.find(icon => icon.path === selectedIcon)?.name}
-                </span>
-              </div>
+          {/* Mobile Action Buttons */}
+          {isMobile && selectedIcon && (
+            <div className="sticky bottom-0 bg-white border-t pt-4 mt-4">
+              <Button 
+                onClick={() => handleSelect(selectedIcon)}
+                className="w-full bg-[#2e9eb3] hover:bg-[#138094] text-white"
+              >
+                Confirm Selection
+              </Button>
             </div>
           )}
         </CardContent>
