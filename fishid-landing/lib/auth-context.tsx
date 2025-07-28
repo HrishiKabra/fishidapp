@@ -16,6 +16,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   signup: (email: string, password: string, name: string) => Promise<void>
   logout: () => Promise<void>
+  checkAuthStatus: () => Promise<boolean>
   loading: boolean
   isInitialized: boolean
 }
@@ -35,10 +36,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initializeAuth()
   }, [])
 
+  // Set up periodic auth check to keep user logged in
+  useEffect(() => {
+    if (user) {
+      // Check auth status every 5 minutes
+      const interval = setInterval(async () => {
+        console.log("🔄 Periodic auth check...")
+        const isValid = await checkAuthStatus()
+        if (!isValid) {
+          console.log("❌ Periodic check failed, user logged out")
+        }
+      }, 5 * 60 * 1000) // 5 minutes
+
+      return () => clearInterval(interval)
+    }
+  }, [user])
+
   const initializeAuth = async () => {
     try {
       const token = localStorage.getItem(TOKEN_KEY)
       const storedUser = localStorage.getItem(USER_KEY)
+
+      console.log("🔐 Initializing auth...", { 
+        hasToken: !!token, 
+        hasStoredUser: !!storedUser,
+        tokenLength: token?.length 
+      })
 
       if (token && storedUser) {
         try {
@@ -56,12 +79,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.log("❌ Token verification failed:", error)
           clearAuthData()
         }
+      } else {
+        console.log("📝 No stored auth data found")
       }
     } catch (error) {
       console.error("Auth initialization error:", error)
       clearAuthData()
     } finally {
       setIsInitialized(true)
+      console.log("✅ Auth initialization complete")
     }
   }
 
@@ -149,6 +175,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const checkAuthStatus = async (): Promise<boolean> => {
+    const token = localStorage.getItem(TOKEN_KEY)
+    if (!token) {
+      return false
+    }
+
+    try {
+      const response = await authApi.verifyToken(token)
+      if (response.success && response.user) {
+        setUser(response.user)
+        return true
+      } else {
+        clearAuthData()
+        return false
+      }
+    } catch (error) {
+      console.log("❌ Auth check failed:", error)
+      clearAuthData()
+      return false
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -156,6 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         signup,
         logout,
+        checkAuthStatus,
         loading,
         isInitialized,
       }}

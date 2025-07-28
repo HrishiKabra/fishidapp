@@ -134,9 +134,7 @@ export const authApi = {
   async verifyToken(token: string) {
     const response = await apiCall("/api/auth/verify", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      body: JSON.stringify({ token }),
     })
 
     return {
