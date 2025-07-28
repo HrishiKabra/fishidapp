@@ -279,7 +279,29 @@ export default function ResultsPage() {
                     <Eye className="w-6 h-6 text-purple-500 flex-shrink-0 mt-1" />
                     <div>
                       <h2 className="text-xl font-semibold text-[#0d2a50] mb-2">Visual Identification Cues</h2>
-                      <div className="text-gray-700 whitespace-pre-line">{identification.visual_cues}</div>
+                      <div className="text-gray-700 whitespace-pre-line">
+                        {identification.visual_cues.split('\n').map((line, index) => {
+                          if (line.includes('**')) {
+                            // Convert **text** to <strong>text</strong>
+                            const parts = line.split('**');
+                            return (
+                              <div key={index} className="mb-1">
+                                {parts.map((part, partIndex) => {
+                                  if (partIndex % 2 === 1) {
+                                    // Odd indices are the bold text
+                                    return <strong key={partIndex}>{part}</strong>;
+                                  } else {
+                                    // Even indices are regular text
+                                    return <span key={partIndex}>{part}</span>;
+                                  }
+                                })}
+                              </div>
+                            );
+                          } else {
+                            return <div key={index} className="mb-1">{line}</div>;
+                          }
+                        })}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
