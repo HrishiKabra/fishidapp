@@ -61,6 +61,7 @@ export default function ResultsPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState("")
   const [showDebug, setShowDebug] = useState(false)
+  const [showFullDescription, setShowFullDescription] = useState(false)
   const { user } = useAuth()
 
   useEffect(() => {
@@ -266,7 +267,20 @@ export default function ResultsPage() {
               <Card>
                 <CardContent className="p-6">
                   <h2 className="text-xl font-semibold text-[#0d2a50] mb-3">About This Species</h2>
-                  <p className="text-gray-700 leading-relaxed">{identification.description}</p>
+                  <p className="text-gray-700 leading-relaxed">
+                    {identification.description.length > 300 && !showFullDescription
+                      ? `${identification.description.substring(0, 300)}...`
+                      : identification.description
+                    }
+                  </p>
+                  {identification.description.length > 300 && (
+                    <button 
+                      className="text-[#2e9eb3] text-sm mt-2 hover:underline"
+                      onClick={() => setShowFullDescription(!showFullDescription)}
+                    >
+                      {showFullDescription ? 'Show less' : 'Read more'}
+                    </button>
+                  )}
                 </CardContent>
               </Card>
             )}
