@@ -65,7 +65,7 @@ def get(name: str):
     if name == "_list":
         return _catalog()          # <- now returns list of dicts, not strings
 
-    with shelve.open("fish_cache") as db:
+    with shelve.open("fish_cache_final") as db:
         rec  = db.get(name, {})
         if time.time() - rec.get("_ts", 0) > CACHE_S:
             rec = {**_fishbase(name), **_wiki(name), "_ts": time.time()}
