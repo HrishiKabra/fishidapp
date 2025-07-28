@@ -120,7 +120,7 @@ export const authApi = {
   async signup(email: string, password: string, name: string) {
     const response = await apiCall("/api/auth/register", {
       method: "POST",
-      body: JSON.stringify({ email, password, name }),
+      body: JSON.stringify({ email, password, username: name }),
     })
 
     return {
