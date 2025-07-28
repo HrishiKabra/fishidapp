@@ -36,6 +36,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initializeAuth()
   }, [])
 
+  // Add a retry mechanism for auth initialization
+  useEffect(() => {
+    if (isInitialized && !user) {
+      // If auth is initialized but no user, try one more time after a delay
+      const retryTimer = setTimeout(() => {
+        console.log("🔄 Retrying auth initialization...")
+        initializeAuth()
+      }, 2000)
+      
+      return () => clearTimeout(retryTimer)
+    }
+  }, [isInitialized, user])
+
   // Set up periodic auth check to keep user logged in
   useEffect(() => {
     if (user) {
@@ -60,13 +73,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log("🔐 Initializing auth...", { 
         hasToken: !!token, 
         hasStoredUser: !!storedUser,
-        tokenLength: token?.length 
+        tokenLength: token?.length,
+        tokenPreview: token ? `${token.substring(0, 20)}...` : null
       })
 
       if (token && storedUser) {
         try {
           console.log("🔐 Verifying stored token...")
           const response = await authApi.verifyToken(token)
+
+          console.log("🔍 Token verification response:", response)
 
           if (response.success && response.user) {
             console.log("✅ Token valid, user logged in:", response.user)
@@ -77,17 +93,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         } catch (error) {
           console.log("❌ Token verification failed:", error)
-          clearAuthData()
+          
+          // Try to use stored user data as fallback
+          try {
+            const parsedUser = JSON.parse(storedUser)
+            console.log("🔄 Attempting fallback with stored user data:", parsedUser)
+            
+            // Set user from stored data temporarily
+            setUser(parsedUser)
+            
+            // Try to refresh the token in background
+            setTimeout(async () => {
+              try {
+                console.log("🔄 Attempting token refresh...")
+                const refreshResponse = await authApi.verifyToken(token)
+                if (refreshResponse.success && refreshResponse.user) {
+                  console.log("✅ Token refresh successful")
+                  setUser(refreshResponse.user)
+                  localStorage.setItem(USER_KEY, JSON.stringify(refreshResponse.user))
+                } else {
+                  console.log("❌ Token refresh failed, logging out")
+                  clearAuthData()
+                }
+              } catch (refreshError) {
+                console.log("❌ Token refresh error:", refreshError)
+                clearAuthData()
+              }
+            }, 1000)
+          } catch (parseError) {
+            console.log("❌ Failed to parse stored user data:", parseError)
+            clearAuthData()
+          }
         }
       } else {
         console.log("📝 No stored auth data found")
+        console.log("🔍 localStorage contents:", {
+          token: localStorage.getItem(TOKEN_KEY),
+          user: localStorage.getItem(USER_KEY)
+        })
       }
     } catch (error) {
       console.error("Auth initialization error:", error)
       clearAuthData()
     } finally {
       setIsInitialized(true)
-      console.log("✅ Auth initialization complete")
+      console.log("✅ Auth initialization complete, user state:", !!user)
     }
   }
 
