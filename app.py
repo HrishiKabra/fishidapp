@@ -380,7 +380,7 @@ def identify_fish():
             'scientific_name': scientific,
             'common_name': meta.get('common_name', ''),
             'confidence': confidence,
-            'description': meta.get('intro', 'No description available'),
+            'description': meta.get('description', meta.get('intro', 'No description available')),
             'habitat': meta.get('habitat') or fallback.get('habitat', 'Habitat information not available'),
             'distribution': meta.get('distribution') or fallback.get('distribution', 'Distribution information not available'),
             'max_length_cm': meta.get('max_length_cm') or fallback.get('max_length_cm', ''),
