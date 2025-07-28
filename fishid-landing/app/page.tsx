@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth-context"
 import { fishApi, ApiError } from "@/lib/api"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { HamburgerMenu } from "@/components/hamburger-menu"
 
 export default function FishIDLanding() {
   const [uploadResult, setUploadResult] = useState<any>(null)
@@ -142,6 +143,7 @@ export default function FishIDLanding() {
               />
             </Link>
           </div>
+          {/* Desktop Nav */}
           <nav className="hidden md:flex items-center space-x-8">
             <button onClick={scrollToAbout} className="text-white hover:text-[#2e9eb3] transition-colors">
               About Us
@@ -164,6 +166,8 @@ export default function FishIDLanding() {
               </Button>
             )}
           </nav>
+          {/* Mobile Hamburger Menu */}
+          <HamburgerMenu onAboutClick={scrollToAbout} />
         </div>
       </header>
 
