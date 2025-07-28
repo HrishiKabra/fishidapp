@@ -58,6 +58,13 @@ Do not add any introductory text or explanations."""
 def _fun(name):    return _groq(
     f"Provide one fun trivia fact (max 25 words) about the fish species {name}.",50,0.8)
 
+def _simple_description(name):
+    """Generate a simple, casual description of the fish"""
+    prompt = f"""Write a simple, casual description of {name} in 2-3 sentences. 
+    Focus on what makes this fish interesting to regular people, not scientists.
+    Keep it friendly and easy to understand. Avoid scientific jargon."""
+    return _groq(prompt, 100, 0.8)
+
 def _clean_visual_cues(text: str) -> str:
     """Clean up malformed visual cues text"""
     if not text:
@@ -108,6 +115,8 @@ def get(name: str):
             rec["visual_cues"] = _clean_visual_cues(visual_cues)
         if "fun_facts" not in rec:
             rec["fun_facts"] = _fun(name)
+        if "description" not in rec:
+            rec["description"] = _simple_description(name)
 
         db[name] = rec
         return rec
