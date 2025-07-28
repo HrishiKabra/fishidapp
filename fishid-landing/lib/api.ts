@@ -24,7 +24,7 @@ class ApiError extends Error {
 }
 
 // Get the Flask backend URL from environment variables
-const FLASK_API_URL = process.env.NEXT_PUBLIC_FLASK_API_URL || "http://localhost:5000"
+const FLASK_API_URL = process.env.NEXT_PUBLIC_FLASK_API_URL || "http://localhost:5001"
 
 // Debug logging
 console.log("🔗 Flask API URL:", FLASK_API_URL)
