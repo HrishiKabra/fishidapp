@@ -296,16 +296,31 @@ export const healthApi = {
         const timestamp = Date.now()
         const testEmail = `test${timestamp}@example.com`
         const testPassword = 'SecurePass123!'
+        const testUsername = `testuser${timestamp}`
         
-        body = JSON.stringify({
-          email: testEmail,
-          password: testPassword,
-          username: `testuser${timestamp}`,
-          ...(endpoint.includes('/fish/save') && { identification_id: 'test_id', notes: 'test' }),
-          ...(endpoint.includes('/auth/verify') && { token: 'test_token' }),
-          // For login endpoint, use the same email but without username
-          ...(endpoint.includes('/auth/login') && { email: testEmail, password: testPassword })
-        })
+        // For auth endpoints, use consistent credentials
+        if (endpoint.includes('/auth/register')) {
+          body = JSON.stringify({
+            email: testEmail,
+            password: testPassword,
+            username: testUsername
+          })
+        } else if (endpoint.includes('/auth/login')) {
+          body = JSON.stringify({
+            email: testEmail,
+            password: testPassword
+          })
+        } else if (endpoint.includes('/auth/verify')) {
+          body = JSON.stringify({
+            token: 'test_token'
+          })
+        } else if (endpoint.includes('/fish/save')) {
+          body = JSON.stringify({
+            identification_id: 'test_id',
+            notes: 'test'
+          })
+        }
+        
         headers['Content-Type'] = 'application/json'
       }
 
