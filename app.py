@@ -88,6 +88,7 @@ def register():
         email = data.get('email', '').strip().lower()
         username = data.get('username', data.get('name', '')).strip()  # Support both 'username' and 'name'
         password = data.get('password', '')
+        fish_icon = data.get('fish_icon', '/images/fish-icons/001-gold-fish.png')
         
         # Validate required fields
         if not email or not username or not password:
@@ -97,7 +98,7 @@ def register():
             }), 400
         
         # Register user with secure authentication system
-        success, message, result = auth_system.register_user(email, username, password)
+        success, message, result = auth_system.register_user(email, username, password, fish_icon)
         
         if success:
             return jsonify({
@@ -108,7 +109,8 @@ def register():
                     'id': result['user']['id'],
                     'email': result['user']['email'],
                     'username': result['user']['username'],
-                    'name': result['user']['username']  # Include 'name' for frontend compatibility
+                    'name': result['user']['username'],  # Include 'name' for frontend compatibility
+                    'fish_icon': result['user']['fish_icon']
                 }
             }), 201
         else:
@@ -160,7 +162,8 @@ def login():
                     'id': result['user']['id'],
                     'email': result['user']['email'],
                     'username': result['user']['username'],
-                    'name': result['user']['username']  # Include 'name' for frontend compatibility
+                    'name': result['user']['username'],  # Include 'name' for frontend compatibility
+                    'fish_icon': result['user']['fish_icon']
                 }
             }), 200
         else:
@@ -203,7 +206,13 @@ def verify_token():
                 'success': True,
                 'valid': True,
                 'message': message,
-                'user': result['user']
+                'user': {
+                    'id': result['user']['id'],
+                    'email': result['user']['email'],
+                    'username': result['user']['username'],
+                    'name': result['user']['username'],  # Include 'name' for frontend compatibility
+                    'fish_icon': result['user']['fish_icon']
+                }
             }), 200
         else:
             return jsonify({
@@ -324,6 +333,61 @@ def reset_auth_data():
         return jsonify({
             'success': False,
             'error': 'Reset failed',
+            'details': str(e)
+        }), 500
+
+@app.route('/api/auth/update-icon', methods=['POST'])
+def update_fish_icon():
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'No data provided'
+            }), 400
+        
+        token = data.get('token')
+        fish_icon = data.get('fish_icon')
+        
+        if not token:
+            return jsonify({
+                'success': False,
+                'error': 'Token is required'
+            }), 400
+        
+        if not fish_icon:
+            return jsonify({
+                'success': False,
+                'error': 'Fish icon is required'
+            }), 400
+        
+        # Verify token and get user
+        success, message, result = auth_system.verify_token(token)
+        
+        if not success:
+            return jsonify({
+                'success': False,
+                'error': message
+            }), 401
+        
+        user_id = result['user']['id']
+        
+        # Update fish icon in database
+        with auth_system._get_db() as (conn, cursor):
+            cursor.execute('UPDATE users SET fish_icon = ? WHERE id = ?', (fish_icon, user_id))
+            conn.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Fish icon updated successfully',
+            'fish_icon': fish_icon
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'Failed to update fish icon',
             'details': str(e)
         }), 500
 

@@ -28,6 +28,7 @@ class User:
     email: str
     username: str
     password_hash: str
+    fish_icon: str
     created_at: datetime
     last_login: Optional[datetime] = None
     login_attempts: int = 0
@@ -48,6 +49,7 @@ class AuthSystem:
                     email TEXT UNIQUE NOT NULL,
                     username TEXT UNIQUE NOT NULL,
                     password_hash TEXT NOT NULL,
+                    fish_icon TEXT DEFAULT '/images/fish-icons/001-gold-fish.png',
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     last_login TIMESTAMP,
                     login_attempts INTEGER DEFAULT 0,
@@ -55,6 +57,12 @@ class AuthSystem:
                     is_active BOOLEAN DEFAULT 1
                 )
             ''')
+            
+            # Add fish_icon column if it doesn't exist (for existing databases)
+            cursor.execute("PRAGMA table_info(users)")
+            columns = [column[1] for column in cursor.fetchall()]
+            if 'fish_icon' not in columns:
+                cursor.execute('ALTER TABLE users ADD COLUMN fish_icon TEXT DEFAULT "/images/fish-icons/001-gold-fish.png"')
             
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS login_attempts (
@@ -150,6 +158,7 @@ class AuthSystem:
                     email=row['email'],
                     username=row['username'],
                     password_hash=row['password_hash'],
+                    fish_icon=row['fish_icon'],
                     created_at=datetime.fromisoformat(row['created_at']),
                     last_login=datetime.fromisoformat(row['last_login']) if row['last_login'] else None,
                     login_attempts=row['login_attempts'],
@@ -172,6 +181,7 @@ class AuthSystem:
                     email=row['email'],
                     username=row['username'],
                     password_hash=row['password_hash'],
+                    fish_icon=row['fish_icon'],
                     created_at=datetime.fromisoformat(row['created_at']),
                     last_login=datetime.fromisoformat(row['last_login']) if row['last_login'] else None,
                     login_attempts=row['login_attempts'],
@@ -213,7 +223,7 @@ class AuthSystem:
             
             conn.commit()
     
-    def register_user(self, email: str, username: str, password: str) -> tuple[bool, str, Optional[Dict]]:
+    def register_user(self, email: str, username: str, password: str, fish_icon: str = "/images/fish-icons/001-gold-fish.png") -> tuple[bool, str, Optional[Dict]]:
         """Register a new user with security validation"""
         
         # Validate email format
@@ -243,9 +253,9 @@ class AuthSystem:
             
             with self._get_db() as (conn, cursor):
                 cursor.execute('''
-                    INSERT INTO users (id, email, username, password_hash)
-                    VALUES (?, ?, ?, ?)
-                ''', (user_id, email, username, password_hash))
+                    INSERT INTO users (id, email, username, password_hash, fish_icon)
+                    VALUES (?, ?, ?, ?, ?)
+                ''', (user_id, email, username, password_hash, fish_icon))
                 conn.commit()
             
             # Generate token for immediate login
@@ -256,7 +266,8 @@ class AuthSystem:
                 'user': {
                     'id': user_id,
                     'email': email,
-                    'username': username
+                    'username': username,
+                    'fish_icon': fish_icon
                 }
             }
             
@@ -307,7 +318,8 @@ class AuthSystem:
             'user': {
                 'id': user.id,
                 'email': user.email,
-                'username': user.username
+                'username': user.username,
+                'fish_icon': user.fish_icon
             }
         }
     
@@ -325,7 +337,8 @@ class AuthSystem:
             'user': {
                 'id': user.id,
                 'email': user.email,
-                'username': user.username
+                'username': user.username,
+                'fish_icon': user.fish_icon
             }
         }
     

@@ -6,13 +6,15 @@ import { Card, CardContent } from "@/components/ui/card"
 import { User, LogOut, Fish, Settings, ChevronDown } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { BackendStatus } from "./backend-status"
+import { FishIconSelector } from "./fish-icon-selector"
 import Image from "next/image"
 import Link from "next/link"
 
 export function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false)
   const [showBackendStatus, setShowBackendStatus] = useState(false)
-  const { user, logout } = useAuth()
+  const [showIconSelector, setShowIconSelector] = useState(false)
+  const { user, logout, updateFishIcon } = useAuth()
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -37,13 +39,13 @@ export function UserDropdown() {
           onClick={() => setIsOpen(!isOpen)}
         >
           <div className="w-8 h-8 rounded-full overflow-hidden bg-white/20">
-            {user.avatar ? (
+            {user.fish_icon ? (
               <Image
-                src={user.avatar || "/placeholder.svg"}
+                src={user.fish_icon}
                 alt={user.name}
                 width={32}
                 height={32}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
@@ -61,13 +63,13 @@ export function UserDropdown() {
               <div className="p-4 border-b">
                 <div className="flex items-center space-x-3">
                   <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100">
-                    {user.avatar ? (
+                    {user.fish_icon ? (
                       <Image
-                        src={user.avatar || "/placeholder.svg"}
+                        src={user.fish_icon}
                         alt={user.name}
                         width={48}
                         height={48}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -103,6 +105,17 @@ export function UserDropdown() {
                   <span>Settings</span>
                 </button>
 
+                <button
+                  className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors w-full text-left"
+                  onClick={() => {
+                    setIsOpen(false)
+                    setShowIconSelector(true)
+                  }}
+                >
+                  <Fish className="w-4 h-4" />
+                  <span>Change Fish Icon</span>
+                </button>
+
                 <hr className="my-2" />
 
                 <button
@@ -122,6 +135,16 @@ export function UserDropdown() {
       </div>
 
       <BackendStatus isOpen={showBackendStatus} onClose={() => setShowBackendStatus(false)} />
+      <FishIconSelector
+        isOpen={showIconSelector}
+        onClose={() => setShowIconSelector(false)}
+        onSelect={(iconPath) => {
+          updateFishIcon(iconPath)
+          setShowIconSelector(false)
+        }}
+        currentIcon={user.fish_icon}
+        title="Change Your Fish Icon"
+      />
     </>
   )
 }

@@ -117,10 +117,15 @@ export const authApi = {
     }
   },
 
-  async signup(email: string, password: string, name: string) {
+  async signup(email: string, password: string, name: string, fishIcon?: string) {
     const response = await apiCall("/api/auth/register", {
       method: "POST",
-      body: JSON.stringify({ email, password, username: name }),
+      body: JSON.stringify({ 
+        email, 
+        password, 
+        username: name,
+        fish_icon: fishIcon || "/images/fish-icons/001-gold-fish.png"
+      }),
     })
 
     return {
@@ -140,6 +145,19 @@ export const authApi = {
     return {
       success: true,
       user: response.user,
+    }
+  },
+
+  async updateFishIcon(token: string, fishIcon: string) {
+    const response = await apiCall("/api/auth/update-icon", {
+      method: "POST",
+      body: JSON.stringify({ token, fish_icon: fishIcon }),
+    })
+
+    return {
+      success: true,
+      message: response.message,
+      fish_icon: response.fish_icon,
     }
   },
 

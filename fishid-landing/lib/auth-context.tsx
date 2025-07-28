@@ -7,6 +7,7 @@ interface User {
   id: string
   email: string
   name: string
+  fish_icon?: string
   avatar?: string
   createdAt?: string
 }
@@ -16,6 +17,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   signup: (email: string, password: string, name: string) => Promise<void>
   logout: () => Promise<void>
+  updateFishIcon: (fishIcon: string) => Promise<void>
   checkAuthStatus: () => Promise<boolean>
   loading: boolean
   isInitialized: boolean
@@ -222,6 +224,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const updateFishIcon = async (fishIcon: string) => {
+    const token = localStorage.getItem(TOKEN_KEY)
+    if (!token) {
+      throw new Error("No authentication token found")
+    }
+
+    try {
+      console.log("🐟 Updating fish icon to:", fishIcon)
+      const response = await authApi.updateFishIcon(token, fishIcon)
+
+      if (response.success) {
+        // Update user data with new fish icon
+        if (user) {
+          const updatedUser = { ...user, fish_icon: fishIcon }
+          setUser(updatedUser)
+          localStorage.setItem(USER_KEY, JSON.stringify(updatedUser))
+          console.log("✅ Fish icon updated successfully")
+        }
+      } else {
+        throw new Error("Failed to update fish icon")
+      }
+    } catch (error) {
+      console.error("❌ Fish icon update error:", error)
+      throw new Error("Failed to update fish icon. Please try again.")
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -229,6 +258,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         signup,
         logout,
+        updateFishIcon,
         checkAuthStatus,
         loading,
         isInitialized,

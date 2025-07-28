@@ -1,16 +1,16 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { X, Mail, Lock, User, Loader2, AlertCircle, CheckCircle, Clock, Settings } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { X, Mail, Lock, User, Loader2, AlertCircle, CheckCircle, Clock, Settings, Fish } from "lucide-react"
+import { authApi } from "@/lib/api"
 import { useAuth } from "@/lib/auth-context"
-import { ApiError } from "@/lib/api"
 import { BackendStatus } from "./backend-status"
+import { FishIconSelector } from "./fish-icon-selector"
+import Image from "next/image"
 
 interface AuthModalProps {
   isOpen: boolean
@@ -19,90 +19,73 @@ interface AuthModalProps {
 
 export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true)
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [name, setName] = useState("")
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [isRateLimited, setIsRateLimited] = useState(false)
-  const [resetTime, setResetTime] = useState<string | null>(null)
+  const [resetTime, setResetTime] = useState("")
   const [showBackendStatus, setShowBackendStatus] = useState(false)
-  const { login, signup, loading } = useAuth()
+  const [selectedIcon, setSelectedIcon] = useState("/images/fish-icons/001-gold-fish.png")
+  const [showIconSelector, setShowIconSelector] = useState(false)
+  const { login } = useAuth()
 
   const resetForm = () => {
+    setName("")
     setEmail("")
     setPassword("")
-    setName("")
     setError("")
     setSuccess("")
-    setIsRateLimited(false)
-    setResetTime(null)
+    setSelectedIcon("/images/fish-icons/001-gold-fish.png")
   }
 
   const formatResetTime = (resetTimeStr: string): string => {
     const resetDate = new Date(resetTimeStr)
     const now = new Date()
     const diffMs = resetDate.getTime() - now.getTime()
-    const diffMinutes = Math.ceil(diffMs / (1000 * 60))
-
-    if (diffMinutes <= 1) {
-      return "less than a minute"
-    } else if (diffMinutes < 60) {
-      return `${diffMinutes} minutes`
-    } else {
-      const hours = Math.floor(diffMinutes / 60)
-      const minutes = diffMinutes % 60
-      return `${hours} hour${hours > 1 ? "s" : ""}${minutes > 0 ? ` and ${minutes} minutes` : ""}`
-    }
+    const diffMins = Math.ceil(diffMs / (1000 * 60))
+    return `${diffMins} minute${diffMins !== 1 ? "s" : ""}`
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
     setError("")
     setSuccess("")
-    setIsRateLimited(false)
-    setResetTime(null)
-
-    // Basic validation
-    if (!email || !password || (!isLogin && !name)) {
-      setError("Please fill in all required fields")
-      return
-    }
-
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long")
-      return
-    }
 
     try {
       if (isLogin) {
-        await login(email, password)
-        setSuccess("Login successful!")
-      } else {
-        await signup(email, password, name)
-        setSuccess("Account created successfully!")
-      }
-
-      // Close modal after short delay to show success message
-      setTimeout(() => {
-        onClose()
-        resetForm()
-      }, 1500)
-    } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.rateLimitExceeded) {
-          setIsRateLimited(true)
-          setResetTime(err.resetTime || null)
-          setError(err.message)
-        } else if (err.status === 0) {
-          // Connection error - show backend status option
-          setError(`${err.message} Click "Check Backend" to diagnose the issue.`)
-        } else {
-          setError(err.message)
+        const result = await authApi.login(email, password)
+        if (result.success) {
+          login(result.user, result.token)
+          setSuccess("Login successful!")
+          setTimeout(() => {
+            onClose()
+            resetForm()
+          }, 1000)
         }
       } else {
-        setError(err instanceof Error ? err.message : "Authentication failed")
+        const result = await authApi.signup(email, password, name, selectedIcon)
+        if (result.success) {
+          login(result.user, result.token)
+          setSuccess("Account created successfully!")
+          setTimeout(() => {
+            onClose()
+            resetForm()
+          }, 1000)
+        }
       }
+    } catch (error: any) {
+      if (error.message?.includes("rate limit")) {
+        setIsRateLimited(true)
+        setResetTime(error.resetTime || "")
+      } else {
+        setError(error.message || "An error occurred")
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -110,9 +93,16 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     setIsLogin(!isLogin)
     setError("")
     setSuccess("")
-    setIsRateLimited(false)
-    setResetTime(null)
+    if (!isLogin) {
+      resetForm()
+    }
   }
+
+  useEffect(() => {
+    if (isOpen) {
+      resetForm()
+    }
+  }, [isOpen])
 
   if (!isOpen) return null
 
@@ -129,7 +119,6 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 onClose()
                 resetForm()
               }}
-              disabled={loading}
             >
               <X className="w-4 h-4" />
             </Button>
@@ -152,23 +141,51 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
-                <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="Enter your name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="pl-10"
-                      required={!isLogin}
-                      disabled={loading || isRateLimited}
-                      minLength={2}
-                    />
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="name"
+                        type="text"
+                        placeholder="Enter your name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="pl-10"
+                        required={!isLogin}
+                        disabled={loading || isRateLimited}
+                        minLength={2}
+                      />
+                    </div>
                   </div>
-                </div>
+
+                  {/* Fish Icon Selection */}
+                  <div className="space-y-2">
+                    <Label>Choose Your Fish Icon</Label>
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                        <Image
+                          src={selectedIcon}
+                          alt="Selected fish icon"
+                          width={48}
+                          height={48}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowIconSelector(true)}
+                        disabled={loading || isRateLimited}
+                        className="flex items-center space-x-2"
+                      >
+                        <Fish className="w-4 h-4" />
+                        <span>Change Icon</span>
+                      </Button>
+                    </div>
+                  </div>
+                </>
               )}
 
               <div className="space-y-2">
@@ -242,8 +259,8 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
               {/* Success message */}
               {success && (
-                <div className="flex items-center space-x-2 text-green-600 bg-green-50 p-3 rounded-lg border border-green-200">
-                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                <div className="flex items-start space-x-2 text-green-600 bg-green-50 p-3 rounded-lg border border-green-200">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                   <span className="text-sm">{success}</span>
                 </div>
               )}
@@ -258,34 +275,34 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     {isLogin ? "Signing In..." : "Creating Account..."}
                   </>
-                ) : isRateLimited ? (
-                  "Rate Limited"
-                ) : isLogin ? (
-                  "Sign In"
                 ) : (
-                  "Create Account"
+                  isLogin ? "Sign In" : "Create Account"
                 )}
               </Button>
-            </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                {isLogin ? "Don't have an account?" : "Already have an account?"}
+              <div className="text-center">
                 <button
                   type="button"
                   onClick={switchMode}
-                  className="ml-1 text-[#2e9eb3] hover:text-[#138094] font-medium"
-                  disabled={loading || isRateLimited}
+                  className="text-[#2e9eb3] hover:text-[#138094] text-sm"
+                  disabled={loading}
                 >
-                  {isLogin ? "Sign up" : "Sign in"}
+                  {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
                 </button>
-              </p>
-            </div>
+              </div>
+            </form>
           </CardContent>
         </Card>
       </div>
 
       <BackendStatus isOpen={showBackendStatus} onClose={() => setShowBackendStatus(false)} />
+      <FishIconSelector
+        isOpen={showIconSelector}
+        onClose={() => setShowIconSelector(false)}
+        onSelect={setSelectedIcon}
+        currentIcon={selectedIcon}
+        title="Choose Your Fish Icon"
+      />
     </>
   )
 }
