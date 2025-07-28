@@ -247,7 +247,7 @@ export default function FishIDLanding() {
       {/* About Section */}
       <section id="about-section" className="py-20 px-6 bg-gray-50">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-[#0d2a50] text-4xl font-bold mb-12">About FishID</h2>
+          <h2 className="text-[#0e496c] text-4xl font-bold mb-12">About FishID</h2>
 
           <div className="space-y-8 text-[#138094] text-lg leading-relaxed">
             <p>
