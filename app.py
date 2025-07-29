@@ -8,6 +8,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from PIL import Image
 from dotenv import load_dotenv
+import sqlite3
 
 from fishid_client import predict          # wrapper you already have
 from fish_meta.fish_meta import get as meta_for  # enriched facts
@@ -511,7 +512,7 @@ def save_to_log():
 # Species database routes
 @app.route('/api/species', methods=['GET'])
 def get_species():
-    """Get all species with optional filtering"""
+    """Get all species with optional filtering from database"""
     try:
         # Get query parameters
         search = request.args.get('search', '').lower()
@@ -521,53 +522,67 @@ def get_species():
         page = int(request.args.get('page', 1))
         limit = int(request.args.get('limit', 20))
         
-        # Get species from the catalog (limit to first 100 for performance)
-        from fish_meta.fish_meta import get as meta_for
-        species_catalog = meta_for("_list")[:100]  # Limit to first 100 species
+        # Connect to database
+        conn = sqlite3.connect('species.db')
+        cursor = conn.cursor()
         
-        # Filter species based on parameters
-        filtered_species = []
-        for species in species_catalog:
-            # Apply basic filters first
-            if search and search not in species['common_name'].lower() and search not in species['scientific_name'].lower():
-                continue
+        # Build query with filters
+        query = "SELECT * FROM species WHERE 1=1"
+        params = []
+        
+        if search:
+            query += " AND (common_name LIKE ? OR scientific_name LIKE ?)"
+            params.extend([f'%{search}%', f'%{search}%'])
             
-            # Create basic species object without detailed info
+        if region != 'all':
+            query += " AND location LIKE ?"
+            params.append(f'%{region}%')
+            
+        if habitat != 'all':
+            query += " AND habitat LIKE ?"
+            params.append(f'%{habitat}%')
+            
+        if status != 'all':
+            query += " AND iucn_status = ?"
+            params.append(status)
+        
+        # Get total count
+        count_query = query.replace("SELECT *", "SELECT COUNT(*)")
+        cursor.execute(count_query, params)
+        total = cursor.fetchone()[0]
+        
+        # Add pagination
+        query += " ORDER BY common_name LIMIT ? OFFSET ?"
+        offset = (page - 1) * limit
+        params.extend([limit, offset])
+        
+        # Execute query
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        
+        # Convert to JSON format
+        species_list = []
+        for row in rows:
             species_obj = {
-                'id': species['scientific_name'].replace(' ', '_').lower(),
-                'common_name': species['common_name'],
-                'scientific_name': species['scientific_name'],
-                'image_url': '/placeholder.svg?height=200&width=300&query=fish',
-                'habitat': 'Coral reefs',  # Default habitat
-                'distribution': 'Indo-Pacific',  # Default distribution
-                'max_length_cm': 20,  # Default size
-                'conservation_status': 'LC',  # Default status
-                'description': f"A {species['common_name'].lower()} found in marine environments.",
-                'family': 'Various',
-                'region': 'Indo-Pacific'
+                'id': row[0],
+                'scientific_name': row[1],
+                'common_name': row[2],
+                'image_url': row[3],
+                'habitat': row[4],
+                'distribution': row[5],  # location field
+                'max_length_cm': row[6],  # size field
+                'conservation_status': row[7],  # iucn_status field
+                'description': row[8],
+                'family': 'Various',  # Default family
+                'region': row[5]  # location field
             }
-            
-            # Apply additional filters if needed
-            if region != 'all' and species_obj['region'].lower() != region.lower():
-                continue
-                
-            if habitat != 'all' and species_obj['habitat'].lower() != habitat.lower():
-                continue
-                
-            if status != 'all' and species_obj['conservation_status'].upper() != status.upper():
-                continue
-            
-            filtered_species.append(species_obj)
+            species_list.append(species_obj)
         
-        # Pagination
-        total = len(filtered_species)
-        start_idx = (page - 1) * limit
-        end_idx = start_idx + limit
-        paginated_species = filtered_species[start_idx:end_idx]
+        conn.close()
         
         return jsonify({
             'success': True,
-            'species': paginated_species,
+            'species': species_list,
             'total': total,
             'page': page,
             'total_pages': (total + limit - 1) // limit,
@@ -583,35 +598,38 @@ def get_species():
 
 @app.route('/api/species/<species_id>', methods=['GET'])
 def get_species_detail(species_id):
-    """Get detailed information for a specific species"""
+    """Get detailed information for a specific species from database"""
     try:
-        # Convert species_id back to scientific name
-        scientific_name = species_id.replace('_', ' ')
+        # Connect to database
+        conn = sqlite3.connect('species.db')
+        cursor = conn.cursor()
         
         # Get species details
-        from fish_meta.fish_meta import get as meta_for
-        details = meta_for(scientific_name)
+        cursor.execute("SELECT * FROM species WHERE id = ?", (species_id,))
+        row = cursor.fetchone()
         
-        if not details:
+        conn.close()
+        
+        if not row:
             return jsonify({
                 'success': False,
                 'error': 'Species not found'
             }), 404
         
         species_obj = {
-            'id': species_id,
-            'common_name': details.get('common_name', ''),
-            'scientific_name': scientific_name,
-            'image_url': details.get('picture', '/placeholder.svg?height=200&width=300'),
-            'habitat': details.get('habitat', 'Habitat information not available'),
-            'distribution': details.get('distribution', 'Distribution information not available'),
-            'max_length_cm': details.get('max_length_cm', ''),
-            'conservation_status': details.get('iucn_status', ''),
-            'description': details.get('description', 'No description available'),
-            'fun_facts': details.get('fun_facts', 'Fun facts not available'),
-            'visual_cues': details.get('visual_cues', 'Visual identification cues not available'),
-            'family': details.get('family', ''),
-            'region': details.get('distribution', '')
+            'id': row[0],
+            'scientific_name': row[1],
+            'common_name': row[2],
+            'image_url': row[3],
+            'habitat': row[4],
+            'distribution': row[5],  # location field
+            'max_length_cm': row[6],  # size field
+            'conservation_status': row[7],  # iucn_status field
+            'description': row[8],
+            'fun_facts': 'Fun facts not available',
+            'visual_cues': 'Visual identification cues not available',
+            'family': 'Various',
+            'region': row[5]  # location field
         }
         
         return jsonify({
@@ -628,15 +646,30 @@ def get_species_detail(species_id):
 
 @app.route('/api/species/filters', methods=['GET'])
 def get_species_filters():
-    """Get available filter options for species"""
+    """Get available filter options for species from database"""
     try:
-        # Return static filter options for now
+        # Connect to database
+        conn = sqlite3.connect('species.db')
+        cursor = conn.cursor()
+        
+        # Get unique values for filters
+        cursor.execute("SELECT DISTINCT location FROM species WHERE location IS NOT NULL")
+        regions = [row[0] for row in cursor.fetchall()]
+        
+        cursor.execute("SELECT DISTINCT habitat FROM species WHERE habitat IS NOT NULL")
+        habitats = [row[0] for row in cursor.fetchall()]
+        
+        cursor.execute("SELECT DISTINCT iucn_status FROM species WHERE iucn_status IS NOT NULL")
+        statuses = [row[0] for row in cursor.fetchall()]
+        
+        conn.close()
+        
         return jsonify({
             'success': True,
             'filters': {
-                'regions': ['Indo-Pacific', 'Atlantic', 'Pacific', 'Mediterranean'],
-                'habitats': ['Coral reefs', 'Deep sea', 'Shallow waters', 'Open ocean'],
-                'statuses': ['LC', 'NT', 'VU', 'EN', 'CR']
+                'regions': regions,
+                'habitats': habitats,
+                'statuses': statuses
             }
         }), 200
         
