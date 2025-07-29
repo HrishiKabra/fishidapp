@@ -24,7 +24,6 @@ import Link from "next/link"
 import { AuthModal } from "@/components/auth-modal"
 import { UserDropdown } from "@/components/user-dropdown"
 import { useAuth } from "@/lib/auth-context"
-import { speciesApi, ApiError } from "@/lib/api"
 
 interface Species {
   id: string
@@ -113,31 +112,22 @@ export default function SpeciesListPage() {
     setLoading(true)
     setError(null)
 
+    // Use mock data by default for now
     try {
-      const response = await speciesApi.getSpecies({
-        page: currentPage,
-        limit: itemsPerPage,
-      })
+      console.log("🐟 Loading species data...")
 
-      if (response.success) {
-        setSpecies(response.species || [])
-        setTotalPages(Math.ceil((response.total || 0) / itemsPerPage))
-      } else {
-        throw new Error(response.message || "Failed to load species")
-      }
+      // Simulate API delay for realistic experience
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Use mock data
+      const mockData = getMockSpecies()
+      setSpecies(mockData)
+      setTotalPages(Math.ceil(mockData.length / itemsPerPage))
+
+      console.log("✅ Mock species data loaded:", mockData.length, "species")
     } catch (err) {
       console.error("Error loading species:", err)
-      if (err instanceof ApiError) {
-        setError(err.message)
-      } else {
-        setError("Failed to load species data")
-      }
-
-      // Fallback to mock data for development
-      if (process.env.NODE_ENV === "development") {
-        setSpecies(getMockSpecies())
-        setTotalPages(3)
-      }
+      setError("Failed to load species data")
     } finally {
       setLoading(false)
     }
@@ -196,7 +186,7 @@ export default function SpeciesListPage() {
       distribution: "Indo-Pacific",
       max_length_cm: 11,
       conservation_status: "LC",
-      description: "Bright orange fish with white stripes, lives in sea anemones",
+      description: "Bright orange fish with white stripes, lives symbiotically in sea anemones",
       family: "Pomacentridae",
       region: "Indo-Pacific",
     },
@@ -209,60 +199,216 @@ export default function SpeciesListPage() {
       distribution: "Indo-Pacific",
       max_length_cm: 30,
       conservation_status: "LC",
-      description: "Bright blue fish with black patterns, popular in aquariums",
+      description: "Bright blue fish with black patterns, popular in aquariums and known as 'Dory'",
       family: "Acanthuridae",
       region: "Indo-Pacific",
     },
     {
       id: "3",
-      common_name: "Angelfish",
+      common_name: "Emperor Angelfish",
       scientific_name: "Pomacanthus imperator",
       image_url: "/placeholder.svg?height=200&width=300",
       habitat: "Coral reefs",
       distribution: "Indo-Pacific",
       max_length_cm: 40,
       conservation_status: "LC",
-      description: "Colorful reef fish with distinctive patterns",
+      description: "Stunning reef fish with blue and yellow stripes, changes dramatically from juvenile to adult",
       family: "Pomacanthidae",
       region: "Indo-Pacific",
     },
     {
       id: "4",
-      common_name: "Parrotfish",
+      common_name: "Blue Parrotfish",
       scientific_name: "Scarus coeruleus",
       image_url: "/placeholder.svg?height=200&width=300",
       habitat: "Coral reefs",
       distribution: "Atlantic",
       max_length_cm: 120,
       conservation_status: "LC",
-      description: "Large herbivorous fish that helps maintain coral reef health",
+      description: "Large herbivorous fish that helps maintain coral reef health by eating algae",
       family: "Scaridae",
       region: "Atlantic",
     },
     {
       id: "5",
-      common_name: "Grouper",
+      common_name: "Nassau Grouper",
       scientific_name: "Epinephelus striatus",
       image_url: "/placeholder.svg?height=200&width=300",
       habitat: "Coral reefs",
       distribution: "Atlantic",
       max_length_cm: 122,
       conservation_status: "CR",
-      description: "Large predatory fish, critically endangered due to overfishing",
+      description: "Large predatory fish, critically endangered due to overfishing and habitat loss",
       family: "Serranidae",
       region: "Atlantic",
     },
     {
       id: "6",
-      common_name: "Butterflyfish",
+      common_name: "Threadfin Butterflyfish",
       scientific_name: "Chaetodon auriga",
       image_url: "/placeholder.svg?height=200&width=300",
       habitat: "Coral reefs",
       distribution: "Indo-Pacific",
       max_length_cm: 23,
       conservation_status: "LC",
-      description: "Delicate reef fish with intricate patterns",
+      description: "Delicate reef fish with intricate patterns and a distinctive thread-like dorsal fin",
       family: "Chaetodontidae",
+      region: "Indo-Pacific",
+    },
+    {
+      id: "7",
+      common_name: "Mandarin Fish",
+      scientific_name: "Synchiropus splendidus",
+      image_url: "/placeholder.svg?height=200&width=300",
+      habitat: "Coral reefs",
+      distribution: "Pacific",
+      max_length_cm: 6,
+      conservation_status: "LC",
+      description: "One of the most colorful fish in the ocean with psychedelic patterns",
+      family: "Callionymidae",
+      region: "Pacific",
+    },
+    {
+      id: "8",
+      common_name: "Moorish Idol",
+      scientific_name: "Zanclus cornutus",
+      image_url: "/placeholder.svg?height=200&width=300",
+      habitat: "Coral reefs",
+      distribution: "Indo-Pacific",
+      max_length_cm: 23,
+      conservation_status: "LC",
+      description: "Distinctive black and white striped fish with a long dorsal fin",
+      family: "Zanclidae",
+      region: "Indo-Pacific",
+    },
+    {
+      id: "9",
+      common_name: "Lionfish",
+      scientific_name: "Pterois volitans",
+      image_url: "/placeholder.svg?height=200&width=300",
+      habitat: "Coral reefs",
+      distribution: "Indo-Pacific",
+      max_length_cm: 38,
+      conservation_status: "LC",
+      description: "Beautiful but venomous fish with elaborate fins and spines",
+      family: "Scorpaenidae",
+      region: "Indo-Pacific",
+    },
+    {
+      id: "10",
+      common_name: "Yellowtail Snapper",
+      scientific_name: "Ocyurus chrysurus",
+      image_url: "/placeholder.svg?height=200&width=300",
+      habitat: "Coral reefs",
+      distribution: "Atlantic",
+      max_length_cm: 86,
+      conservation_status: "LC",
+      description: "Popular game fish with distinctive yellow tail and silver body",
+      family: "Lutjanidae",
+      region: "Atlantic",
+    },
+    {
+      id: "11",
+      common_name: "Banggai Cardinalfish",
+      scientific_name: "Pterapogon kauderni",
+      image_url: "/placeholder.svg?height=200&width=300",
+      habitat: "Shallow waters",
+      distribution: "Indo-Pacific",
+      max_length_cm: 8,
+      conservation_status: "EN",
+      description: "Endangered species with distinctive black and white pattern, endemic to Indonesia",
+      family: "Apogonidae",
+      region: "Indo-Pacific",
+    },
+    {
+      id: "12",
+      common_name: "Whale Shark",
+      scientific_name: "Rhincodon typus",
+      image_url: "/placeholder.svg?height=200&width=300",
+      habitat: "Open ocean",
+      distribution: "Global",
+      max_length_cm: 1200,
+      conservation_status: "EN",
+      description: "The largest fish in the ocean, gentle giant that feeds on plankton",
+      family: "Rhincodontidae",
+      region: "Global",
+    },
+    {
+      id: "13",
+      common_name: "Manta Ray",
+      scientific_name: "Mobula birostris",
+      image_url: "/placeholder.svg?height=200&width=300",
+      habitat: "Open ocean",
+      distribution: "Global",
+      max_length_cm: 700,
+      conservation_status: "VU",
+      description: "Majestic ray with the largest brain of any fish, known for its intelligence",
+      family: "Mobulidae",
+      region: "Global",
+    },
+    {
+      id: "14",
+      common_name: "Leafy Sea Dragon",
+      scientific_name: "Phycodurus eques",
+      image_url: "/placeholder.svg?height=200&width=300",
+      habitat: "Shallow waters",
+      distribution: "Pacific",
+      max_length_cm: 35,
+      conservation_status: "NT",
+      description: "Master of camouflage with leaf-like appendages, related to seahorses",
+      family: "Syngnathidae",
+      region: "Pacific",
+    },
+    {
+      id: "15",
+      common_name: "Giant Pacific Octopus",
+      scientific_name: "Enteroctopus dofleini",
+      image_url: "/placeholder.svg?height=200&width=300",
+      habitat: "Deep sea",
+      distribution: "Pacific",
+      max_length_cm: 600,
+      conservation_status: "LC",
+      description: "Largest octopus species, highly intelligent with problem-solving abilities",
+      family: "Enteroctopodidae",
+      region: "Pacific",
+    },
+    {
+      id: "16",
+      common_name: "Bluefin Tuna",
+      scientific_name: "Thunnus thynnus",
+      image_url: "/placeholder.svg?height=200&width=300",
+      habitat: "Open ocean",
+      distribution: "Atlantic",
+      max_length_cm: 458,
+      conservation_status: "EN",
+      description: "Highly prized commercial fish, endangered due to overfishing",
+      family: "Scombridae",
+      region: "Atlantic",
+    },
+    {
+      id: "17",
+      common_name: "Seahorse",
+      scientific_name: "Hippocampus reidi",
+      image_url: "/placeholder.svg?height=200&width=300",
+      habitat: "Shallow waters",
+      distribution: "Atlantic",
+      max_length_cm: 17,
+      conservation_status: "VU",
+      description: "Unique fish where males carry the eggs, vulnerable due to habitat loss",
+      family: "Syngnathidae",
+      region: "Atlantic",
+    },
+    {
+      id: "18",
+      common_name: "Pufferfish",
+      scientific_name: "Arothron meleagris",
+      image_url: "/placeholder.svg?height=200&width=300",
+      habitat: "Coral reefs",
+      distribution: "Indo-Pacific",
+      max_length_cm: 50,
+      conservation_status: "LC",
+      description: "Can inflate into a spiky ball when threatened, some species are highly toxic",
+      family: "Tetraodontidae",
       region: "Indo-Pacific",
     },
   ]
