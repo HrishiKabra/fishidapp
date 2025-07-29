@@ -508,6 +508,165 @@ def save_to_log():
             'details': str(e)
         }), 500
 
+# Species database routes
+@app.route('/api/species', methods=['GET'])
+def get_species():
+    """Get all species with optional filtering"""
+    try:
+        # Get query parameters
+        search = request.args.get('search', '').lower()
+        region = request.args.get('region', 'all')
+        habitat = request.args.get('habitat', 'all')
+        status = request.args.get('status', 'all')
+        page = int(request.args.get('page', 1))
+        limit = int(request.args.get('limit', 20))
+        
+        # Get species from the catalog
+        from fish_meta.fish_meta import get as meta_for
+        species_catalog = meta_for("_list")
+        
+        # Filter species based on parameters
+        filtered_species = []
+        for species in species_catalog:
+            # Get detailed info for each species
+            details = meta_for(species['scientific_name'])
+            
+            # Apply filters
+            if search and search not in species['common_name'].lower() and search not in species['scientific_name'].lower():
+                continue
+                
+            if region != 'all' and details.get('distribution', '').lower() != region.lower():
+                continue
+                
+            if habitat != 'all' and details.get('habitat', '').lower() != habitat.lower():
+                continue
+                
+            if status != 'all' and details.get('iucn_status', '').upper() != status.upper():
+                continue
+            
+            # Create species object
+            species_obj = {
+                'id': species['scientific_name'].replace(' ', '_').lower(),
+                'common_name': species['common_name'],
+                'scientific_name': species['scientific_name'],
+                'image_url': details.get('picture', '/placeholder.svg?height=200&width=300'),
+                'habitat': details.get('habitat', 'Habitat information not available'),
+                'distribution': details.get('distribution', 'Distribution information not available'),
+                'max_length_cm': details.get('max_length_cm', ''),
+                'conservation_status': details.get('iucn_status', ''),
+                'description': details.get('description', 'No description available'),
+                'family': details.get('family', ''),
+                'region': details.get('distribution', '')
+            }
+            
+            filtered_species.append(species_obj)
+        
+        # Pagination
+        total = len(filtered_species)
+        start_idx = (page - 1) * limit
+        end_idx = start_idx + limit
+        paginated_species = filtered_species[start_idx:end_idx]
+        
+        return jsonify({
+            'success': True,
+            'species': paginated_species,
+            'total': total,
+            'page': page,
+            'total_pages': (total + limit - 1) // limit,
+            'limit': limit
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'Failed to fetch species',
+            'details': str(e)
+        }), 500
+
+@app.route('/api/species/<species_id>', methods=['GET'])
+def get_species_detail(species_id):
+    """Get detailed information for a specific species"""
+    try:
+        # Convert species_id back to scientific name
+        scientific_name = species_id.replace('_', ' ')
+        
+        # Get species details
+        from fish_meta.fish_meta import get as meta_for
+        details = meta_for(scientific_name)
+        
+        if not details:
+            return jsonify({
+                'success': False,
+                'error': 'Species not found'
+            }), 404
+        
+        species_obj = {
+            'id': species_id,
+            'common_name': details.get('common_name', ''),
+            'scientific_name': scientific_name,
+            'image_url': details.get('picture', '/placeholder.svg?height=200&width=300'),
+            'habitat': details.get('habitat', 'Habitat information not available'),
+            'distribution': details.get('distribution', 'Distribution information not available'),
+            'max_length_cm': details.get('max_length_cm', ''),
+            'conservation_status': details.get('iucn_status', ''),
+            'description': details.get('description', 'No description available'),
+            'fun_facts': details.get('fun_facts', 'Fun facts not available'),
+            'visual_cues': details.get('visual_cues', 'Visual identification cues not available'),
+            'family': details.get('family', ''),
+            'region': details.get('distribution', '')
+        }
+        
+        return jsonify({
+            'success': True,
+            'species': species_obj
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'Failed to fetch species details',
+            'details': str(e)
+        }), 500
+
+@app.route('/api/species/filters', methods=['GET'])
+def get_species_filters():
+    """Get available filter options for species"""
+    try:
+        # Get species catalog
+        from fish_meta.fish_meta import get as meta_for
+        species_catalog = meta_for("_list")
+        
+        # Extract unique values for filters
+        regions = set()
+        habitats = set()
+        statuses = set()
+        
+        for species in species_catalog[:100]:  # Limit to first 100 for performance
+            details = meta_for(species['scientific_name'])
+            
+            if details.get('distribution'):
+                regions.add(details['distribution'])
+            if details.get('habitat'):
+                habitats.add(details['habitat'])
+            if details.get('iucn_status'):
+                statuses.add(details['iucn_status'])
+        
+        return jsonify({
+            'success': True,
+            'filters': {
+                'regions': list(regions),
+                'habitats': list(habitats),
+                'statuses': list(statuses)
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': 'Failed to fetch filter options',
+            'details': str(e)
+        }), 500
+
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5001))
     app.run(debug=False, host='0.0.0.0', port=port)

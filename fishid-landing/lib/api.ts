@@ -470,4 +470,83 @@ export const healthApi = {
   },
 }
 
+// Species API functions
+export const speciesApi = {
+  async getSpecies(params: {
+    search?: string
+    region?: string
+    habitat?: string
+    status?: string
+    page?: number
+    limit?: number
+  } = {}) {
+    const searchParams = new URLSearchParams()
+    
+    if (params.search) searchParams.append('search', params.search)
+    if (params.region) searchParams.append('region', params.region)
+    if (params.habitat) searchParams.append('habitat', params.habitat)
+    if (params.status) searchParams.append('status', params.status)
+    if (params.page) searchParams.append('page', params.page.toString())
+    if (params.limit) searchParams.append('limit', params.limit.toString())
+    
+    const response = await fetch(`${FLASK_API_URL}/api/species?${searchParams.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new ApiError(
+        errorData.error || `HTTP error! status: ${response.status}`,
+        response.status,
+        errorData.details
+      )
+    }
+
+    return await response.json()
+  },
+
+  async getSpeciesDetail(speciesId: string) {
+    const response = await fetch(`${FLASK_API_URL}/api/species/${speciesId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new ApiError(
+        errorData.error || `HTTP error! status: ${response.status}`,
+        response.status,
+        errorData.details
+      )
+    }
+
+    return await response.json()
+  },
+
+  async getSpeciesFilters() {
+    const response = await fetch(`${FLASK_API_URL}/api/species/filters`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new ApiError(
+        errorData.error || `HTTP error! status: ${response.status}`,
+        response.status,
+        errorData.details
+      )
+    }
+
+    return await response.json()
+  },
+}
+
 export { ApiError }
