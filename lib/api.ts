@@ -239,6 +239,81 @@ export const fishApi = {
   },
 }
 
+export const speciesApi = {
+  async getSpecies(
+    params: {
+      page?: number
+      limit?: number
+      search?: string
+      region?: string
+      habitat?: string
+      conservation_status?: string
+    } = {},
+  ) {
+    const queryParams = new URLSearchParams()
+
+    if (params.page) queryParams.append("page", params.page.toString())
+    if (params.limit) queryParams.append("limit", params.limit.toString())
+    if (params.search) queryParams.append("search", params.search)
+    if (params.region && params.region !== "all") queryParams.append("region", params.region)
+    if (params.habitat && params.habitat !== "all") queryParams.append("habitat", params.habitat)
+    if (params.conservation_status && params.conservation_status !== "all") {
+      queryParams.append("conservation_status", params.conservation_status)
+    }
+
+    const endpoint = `/api/species${queryParams.toString() ? `?${queryParams.toString()}` : ""}`
+
+    try {
+      const response = await apiCall(endpoint, {
+        method: "GET",
+      })
+
+      return {
+        success: true,
+        species: response.species || [],
+        total: response.total || 0,
+        page: response.page || 1,
+        totalPages: response.total_pages || 1,
+      }
+    } catch (error) {
+      console.error("Species API error:", error)
+      throw error
+    }
+  },
+
+  async getSpeciesById(id: string) {
+    try {
+      const response = await apiCall(`/api/species/${id}`, {
+        method: "GET",
+      })
+
+      return {
+        success: true,
+        species: response.species,
+      }
+    } catch (error) {
+      console.error("Species detail API error:", error)
+      throw error
+    }
+  },
+
+  async getSpeciesByFamily(family: string) {
+    try {
+      const response = await apiCall(`/api/species/family/${family}`, {
+        method: "GET",
+      })
+
+      return {
+        success: true,
+        species: response.species || [],
+      }
+    } catch (error) {
+      console.error("Species by family API error:", error)
+      throw error
+    }
+  },
+}
+
 // Health check for backend connectivity
 export const healthApi = {
   async checkBackend() {
