@@ -261,7 +261,7 @@ export default function SpeciesListPage() {
                         <SelectItem value="Mediterranean">Mediterranean</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+          </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Habitat</label>
@@ -294,7 +294,7 @@ export default function SpeciesListPage() {
                         <SelectItem value="CR">Critically Endangered</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                </div>
                 </div>
 
                 <div className="flex justify-between items-center">
@@ -306,7 +306,7 @@ export default function SpeciesListPage() {
                     <Button variant="ghost" onClick={clearFilters} className="text-gray-500">
                       Clear Filters
                     </Button>
-                  </div>
+                </div>
                 </div>
               </div>
             )}
@@ -457,11 +457,11 @@ export default function SpeciesListPage() {
           <p className="text-white/90 text-lg mb-8">
             Upload a photo and get instant AI-powered identification with detailed species information
           </p>
-          <Link href="/">
+            <Link href="/">
             <Button className="bg-white text-[#0e496c] hover:bg-gray-100 px-8 py-3 text-lg rounded-full">
               Start Identifying
-            </Button>
-          </Link>
+              </Button>
+            </Link>
         </div>
       </section>
 
@@ -476,13 +476,13 @@ export default function SpeciesListPage() {
 
               <div className="flex space-x-4 mb-6">
                 <a href="https://instagram.com/hrishikabra" target="_blank" rel="noopener noreferrer">
-                  <Instagram className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
+                <Instagram className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
                 </a>
                 <a href="https://github.com/HrishiKabra" target="_blank" rel="noopener noreferrer">
-                  <Github className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
+                <Github className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
                 </a>
                 <a href="https://linkedin.com/in/HrishiKabra" target="_blank" rel="noopener noreferrer">
-                  <Linkedin className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
+                <Linkedin className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
                 </a>
               </div>
 
