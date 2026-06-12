@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowLeft, Lightbulb, ExternalLink, Camera, Heart, Eye, Fish, Loader2 } from "lucide-react"
+import { Lightbulb, ExternalLink, Camera, Heart, Eye, Fish, Loader2 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import { HamburgerMenu } from "@/components/hamburger-menu"
+import { SiteHeader } from "@/components/site-header"
 import { AuthModal } from "@/components/auth-modal"
 import { loadEnrichment, type EnrichmentSections } from "@/lib/enrichment"
 import { saveIdentification } from "@/lib/fish-log"
@@ -117,10 +117,6 @@ export default function ResultsPage() {
     }
   }
 
-  const scrollToAbout = () => {
-    window.location.href = "/#about-section"
-  }
-
   if (noData) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -143,42 +139,7 @@ export default function ResultsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-[#0e496c] px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Link href="/">
-              <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-            </Link>
-            <Link href="/">
-              <Image
-                src="/images/logo.png"
-                alt="FishID Logo"
-                width={120}
-                height={40}
-                className="h-10 w-auto cursor-pointer"
-              />
-            </Link>
-          </div>
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-white hover:text-[#2e9eb3] transition-colors">
-              New Search
-            </Link>
-            <button onClick={scrollToAbout} className="text-white hover:text-[#2e9eb3] transition-colors">
-              About Us
-            </button>
-            <Link href="/fish-log" className="text-white hover:text-[#2e9eb3] transition-colors">
-              Fish Log
-            </Link>
-            <Link href="/species-list" className="text-white hover:text-[#2e9eb3] transition-colors">
-              Species List
-            </Link>
-          </nav>
-          <HamburgerMenu onAboutClick={scrollToAbout} onLoginClick={() => setShowAuthModal(true)} />
-        </div>
-      </header>
+      <SiteHeader showBack onLoginClick={() => setShowAuthModal(true)} />
 
       <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Uploaded photo hero */}

@@ -3,15 +3,14 @@
 import { useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Instagram, Github, Linkedin, AlertTriangle } from "lucide-react"
+import { AlertTriangle } from "lucide-react"
 import { FileUpload } from "@/components/file-upload"
 import { AuthModal } from "@/components/auth-modal"
-import { UserDropdown } from "@/components/user-dropdown"
+import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
 import { useAuth } from "@/lib/auth-context"
 import { prepareImage } from "@/lib/image-prep"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { HamburgerMenu } from "@/components/hamburger-menu"
 
 export default function FishIDLanding() {
   const [uploadResult, setUploadResult] = useState<any>(null)
@@ -81,13 +80,6 @@ export default function FishIDLanding() {
     setDebugInfo("")
   }
 
-  const scrollToAbout = () => {
-    const aboutSection = document.getElementById("about-section")
-    if (aboutSection) {
-      aboutSection.scrollIntoView({ behavior: "smooth" })
-    }
-  }
-
   // Show loading state while auth initializes
   if (!isInitialized) {
     return (
@@ -102,47 +94,7 @@ export default function FishIDLanding() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-[#0e496c] px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-            <Link href="/">
-              <Image
-                src="/images/logo.png"
-                alt="FishID Logo"
-                width={120}
-                height={40}
-                className="h-10 w-auto cursor-pointer"
-              />
-            </Link>
-          </div>
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <button onClick={scrollToAbout} className="text-white hover:text-[#2e9eb3] transition-colors">
-              About Us
-            </button>
-            <Link href="/fish-log" className="text-white hover:text-[#2e9eb3] transition-colors">
-              Fish Log
-            </Link>
-            <Link href="/species-list" className="text-white hover:text-[#2e9eb3] transition-colors">
-              Species List
-            </Link>
-            {user ? (
-              <UserDropdown />
-            ) : (
-              <Button
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-[#0e496c] transition-colors bg-transparent"
-                onClick={() => setShowAuthModal(true)}
-              >
-                Log In
-              </Button>
-            )}
-          </nav>
-          {/* Mobile Hamburger Menu */}
-          <HamburgerMenu onAboutClick={scrollToAbout} onLoginClick={() => setShowAuthModal(true)} />
-        </div>
-      </header>
+      <SiteHeader onLoginClick={() => setShowAuthModal(true)} />
 
       {/* Hero Section with Background Image */}
       <section className="relative min-h-[100vh] flex items-center justify-center py-8">
@@ -244,36 +196,7 @@ export default function FishIDLanding() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#0e496c] text-white py-12 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <h3 className="text-2xl font-bold mb-4">Reach Out!</h3>
-              <p className="text-sm mb-2">Feel free to reach out to me on Instagram, LinkedIn or via email.</p>
-              <p className="text-sm mb-6">kabrahrishi@gmail.com</p>
-
-              <div className="flex space-x-4 mb-6">
-                <a href="https://instagram.com/hrishikabra" target="_blank" rel="noopener noreferrer">
-                  <Instagram className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
-                </a>
-                <a href="https://github.com/HrishiKabra" target="_blank" rel="noopener noreferrer">
-                  <Github className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
-                </a>
-                <a href="https://linkedin.com/in/HrishiKabra" target="_blank" rel="noopener noreferrer">
-                  <Linkedin className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
-                </a>
-              </div>
-
-              <p className="text-xs text-gray-300">© 2024 All Rights Reserved</p>
-            </div>
-
-            <div className="flex justify-end">
-              <Image src="/images/logo.png" alt="FishID Logo" width={200} height={80} className="h-16 w-auto" />
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
 
       {/* Auth Modal */}
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />

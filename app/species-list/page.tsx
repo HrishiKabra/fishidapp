@@ -7,24 +7,11 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  Instagram,
-  Github,
-  Linkedin,
-  Search,
-  Filter,
-  MapPin,
-  Waves,
-  Ruler,
-  Eye,
-  Loader2,
-  AlertCircle,
-} from "lucide-react"
+import { Search, Filter, MapPin, Waves, Ruler, Eye, Loader2, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { AuthModal } from "@/components/auth-modal"
-import { UserDropdown } from "@/components/user-dropdown"
-import { HamburgerMenu } from "@/components/hamburger-menu"
-import { useAuth } from "@/lib/auth-context"
+import { SiteHeader } from "@/components/site-header"
+import { SiteFooter } from "@/components/site-footer"
 import { fetchSpecies, type Species } from "@/lib/species"
 
 const getStatusColor = (status: string) => {
@@ -85,7 +72,6 @@ export default function SpeciesListPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalSpecies, setTotalSpecies] = useState(0)
-  const { user } = useAuth()
 
   const loadSpecies = async () => {
     setLoading(true)
@@ -125,11 +111,6 @@ export default function SpeciesListPage() {
     loadSpecies()
   }
 
-  const scrollToAbout = () => {
-    // Navigate to home page and scroll to about section
-    window.location.href = "/#about-section"
-  }
-
   useEffect(() => {
     loadSpecies()
   }, [currentPage])
@@ -147,47 +128,7 @@ export default function SpeciesListPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-[#0e496c] px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-            <Link href="/">
-              <Image
-                src="/images/logo.png"
-                alt="FishID Logo"
-                width={120}
-                height={40}
-                className="h-10 w-auto cursor-pointer"
-              />
-            </Link>
-          </div>
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <button onClick={scrollToAbout} className="text-white hover:text-[#2e9eb3] transition-colors">
-              About Us
-            </button>
-            <Link href="/fish-log" className="text-white hover:text-[#2e9eb3] transition-colors">
-              Fish Log
-            </Link>
-            <Link href="/species-list" className="text-white text-[#2e9eb3] font-medium">
-              Species List
-            </Link>
-            {user ? (
-              <UserDropdown />
-            ) : (
-              <Button
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-[#0e496c] transition-colors bg-transparent"
-                onClick={() => setShowAuthModal(true)}
-              >
-                Log In
-              </Button>
-            )}
-          </nav>
-          {/* Mobile Hamburger Menu */}
-          <HamburgerMenu onAboutClick={scrollToAbout} onLoginClick={() => setShowAuthModal(true)} />
-        </div>
-      </header>
+      <SiteHeader onLoginClick={() => setShowAuthModal(true)} />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-teal-50 to-blue-50 py-16 px-6">
@@ -393,7 +334,8 @@ export default function SpeciesListPage() {
 
                   <div className="flex items-center space-x-2">
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      const page = i + 1
+                      const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4))
+                      const page = start + i
                       return (
                         <Button
                           key={page}
@@ -438,36 +380,7 @@ export default function SpeciesListPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-[#0e496c] text-white py-12 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 items-center">
-            <div>
-              <h3 className="text-2xl font-bold mb-4">Reach Out!</h3>
-              <p className="text-sm mb-2">Feel free to reach out to me on Instagram, LinkedIn or via email.</p>
-              <p className="text-sm mb-6">kabrahrishi@gmail.com</p>
-
-              <div className="flex space-x-4 mb-6">
-                <a href="https://instagram.com/hrishikabra" target="_blank" rel="noopener noreferrer">
-                <Instagram className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
-                </a>
-                <a href="https://github.com/HrishiKabra" target="_blank" rel="noopener noreferrer">
-                <Github className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
-                </a>
-                <a href="https://linkedin.com/in/HrishiKabra" target="_blank" rel="noopener noreferrer">
-                <Linkedin className="w-6 h-6 hover:text-[#2e9eb3] cursor-pointer transition-colors" />
-                </a>
-              </div>
-
-              <p className="text-xs text-gray-300">© 2024 All Rights Reserved</p>
-            </div>
-
-            <div className="flex justify-end">
-              <Image src="/images/logo.png" alt="FishID Logo" width={200} height={80} className="h-16 w-auto" />
-            </div>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
 
       {/* Auth Modal */}
       <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />

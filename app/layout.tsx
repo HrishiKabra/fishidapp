@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "FishID - AI-Powered Fish Species Identification",
   description: "Identify fish species instantly using cutting-edge AI technology",
-    generator: 'v0.dev'
+
 }
 
 export default function RootLayout({
