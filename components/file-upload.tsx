@@ -5,7 +5,7 @@ import type React from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Upload, X, AlertCircle } from "lucide-react"
+import { Upload, X, AlertCircle, Camera } from "lucide-react"
 import { useFileUpload } from "@/hooks/use-file-upload"
 
 interface FileUploadProps {
@@ -14,6 +14,7 @@ interface FileUploadProps {
 
 export function FileUpload({ onUploadComplete }: FileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
   const { file, preview, isProcessing, progress, result, error, setFile, reset } = useFileUpload()
 
   // Call onUploadComplete when processing is done successfully
@@ -69,6 +70,27 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
             className="hidden"
             onChange={handleSelect}
           />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            onChange={handleSelect}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="mt-4 border-white text-white bg-transparent hover:bg-white hover:text-[#0e496c] transition-colors md:hidden"
+            onClick={(e) => {
+              e.stopPropagation()
+              cameraInputRef.current?.click()
+            }}
+          >
+            <Camera className="w-4 h-4 mr-2" />
+            Take Photo
+          </Button>
         </div>
       )}
 
