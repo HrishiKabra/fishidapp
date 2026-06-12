@@ -124,7 +124,7 @@ export default function FishLogPage() {
             <div className="bg-white rounded-3xl p-12 shadow-lg border border-gray-100 max-w-xl mx-auto text-center">
               <h2 className="text-2xl font-bold text-[#0d2a50] mb-4">Sign in to see your log</h2>
               <p className="text-gray-600 mb-8">
-                Your identified fish are saved to your account so they're here whenever you come back.
+                Your identified fish are saved to your account so they&apos;re here whenever you come back.
               </p>
               <Button
                 className="bg-[#2e9eb3] hover:bg-[#138094] text-white px-8 py-3 rounded-full"
@@ -145,7 +145,7 @@ export default function FishLogPage() {
               <Camera className="w-16 h-16 text-[#2e9eb3] mx-auto mb-6" />
               <h2 className="text-2xl font-bold text-[#0d2a50] mb-4">No fish logged yet</h2>
               <p className="text-gray-600 mb-8">
-                Identify a fish and hit "Save to Fish Log" — it'll show up here with your photo.
+                Identify a fish and hit &quot;Save to Fish Log&quot; — it&apos;ll show up here with your photo.
               </p>
               <Link href="/">
                 <Button className="bg-[#2e9eb3] hover:bg-[#138094] text-white px-8 py-3 rounded-full">

@@ -231,7 +231,7 @@ export default function FishIconSelectorPage() {
         {filteredIcons.length === 0 && (
           <div className="text-center py-12 text-gray-500">
             <Fish className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg">No fish icons found matching "{searchTerm}"</p>
+            <p className="text-lg">No fish icons found matching &quot;{searchTerm}&quot;</p>
             <p className="text-sm mt-2">Try a different search term</p>
           </div>
         )}

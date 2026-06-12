@@ -216,7 +216,7 @@ export default function FishIDLanding() {
           <div className="space-y-8 text-[#138094] text-lg leading-relaxed">
             <p>
               FishID was created out of a deep love for the ocean and a passion for technology. As a PADI Rescue Diver
-              and Master Scuba Diver who has explored marine life across the globe, I've always been fascinated by the
+              and Master Scuba Diver who has explored marine life across the globe, I&apos;ve always been fascinated by the
               incredible diversity beneath the surface.
             </p>
 
@@ -227,7 +227,7 @@ export default function FishIDLanding() {
               lovers alike.
             </p>
 
-            <p>It's my way of bringing tech and marine conservation together—one fish at a time.</p>
+            <p>It&apos;s my way of bringing tech and marine conservation together—one fish at a time.</p>
           </div>
 
           <div className="mt-16">

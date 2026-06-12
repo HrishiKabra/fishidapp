@@ -189,7 +189,7 @@ export function FishIconSelector({ isOpen, onClose, onSelect, currentIcon, title
           {filteredIcons.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               <Fish className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-              <p>No fish icons found matching "{searchTerm}"</p>
+              <p>No fish icons found matching &quot;{searchTerm}&quot;</p>
             </div>
           )}
 
