@@ -4,108 +4,66 @@
 
 # FishID
 
-**AI-Powered Fish Species Identification**
+**AI-powered fish species identification** — upload a photo, get ranked species matches with AI-generated facts, and keep a personal fish log. Built for divers, snorkelers, and marine enthusiasts.
 
-FishID is a full-stack web application that lets you identify fish species from photos using advanced AI, and provides fun, easy-to-understand facts about each fish. Built for divers, hobbyists, and marine enthusiasts!
+**Live app:** [fishid.vercel.app](https://fishid.vercel.app)
 
----
+## How it works
 
-## 🌐 Demo
-- **Live App:** [fishid.vercel.app](https://fishid.vercel.app)
+```mermaid
+flowchart LR
+  B[Browser] -->|resize + EXIF strip| I["/api/identify"]
+  I -->|top-3 candidates| F[Fishial AI]
+  B -->|stream| E["/api/enrich"]
+  E --> G[Groq llama-3.3-70b]
+  E --> W[Wikipedia]
+  E --> C[(enrichment_cache)]
+  B -->|supabase-js + RLS| S[(Supabase\nAuth · Postgres · Storage)]
+```
 
----
+- **One Next.js app** (App Router) on Vercel — no separate backend.
+- **Supabase** owns auth (email + Google OAuth, cookie sessions), Postgres (species catalog, fish log, rate limiting, AI cache), and Storage (log photos, private bucket).
+- **Two server routes** are all that's needed: `POST /api/identify` (session-gated, rate-limited proxy to the Fishial recognition API, returns ranked candidates) and `GET /api/enrich/[species]` (+`/stream`: one cached Groq completion streamed to the client, with Wikipedia as the factual backbone).
+- Photos are resized and **EXIF-stripped in the browser** before they go anywhere — GPS metadata never leaves the device.
+- The fish log is plain `supabase-js` under row-level security: every table and the storage bucket are owner-scoped.
 
-## 🛠 Tech Stack
-- **Frontend:** Next.js (React, TypeScript, Tailwind CSS)
-- **Backend:** Flask (Python)
-- **Database:** SQLite (for user/auth and fish cache)
-- **AI/ML:** Fishial API, Groq, FishBase, Wikipedia
-- **Authentication:** JWT, bcrypt
-- **Deployment:** Vercel (frontend), Render (backend)
+## Features
 
----
+- 📷 Photo upload with mobile camera capture
+- 🐠 Ranked top-3 species matches with confidence bars (fish ID is genuinely ambiguous — the UI says so)
+- ✨ AI-generated description, visual ID cues, and a fun fact, streamed in live and cached per species
+- 📒 Personal fish log with photos, candidates, and dates
+- 🔍 Searchable species catalog with habitat/region/conservation filters
+- 🔐 Supabase Auth: email + password (with confirmation) and one-tap Google sign-in
 
-## 🚀 Features
-- **AI Fish Identification:** Upload a photo and get instant species results
-- **Simple Descriptions:** Friendly, non-scientific facts for every fish
-- **Visual Cues:** Easy-to-read, bolded bullet points for ID
-- **User Accounts:** Secure registration, login, and persistent sessions
-- **Personal Fish Log:** Save and view your identifications
-- **Fun Facts:** Trivia for every species
-- **Mobile Friendly:** Responsive, modern UI
+## Development
 
----
-
-## 📦 Setup & Usage
-
-### 1. **Clone the Repo**
 ```bash
-git clone https://github.com/HrishiKabra/fishidapp.git
-cd fishidapp
+pnpm install
+pnpm dev          # localhost:3000
+pnpm typecheck && pnpm lint && pnpm test && pnpm build
 ```
 
-### 2. **Backend Setup**
-```bash
-pip install -r requirements.txt
+`.env.local`:
+
 ```
-Create a `.env` file:
-```
-FISHIAL_CLIENT_ID=your_fishial_client_id
-FISHIAL_SECRET=your_fishial_secret
-GROQ_API_KEY=your_groq_key
-SECRET_KEY=your_flask_secret_key
-JWT_SECRET_KEY=your_jwt_secret
-```
-Run the backend:
-```bash
-python app.py
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+FISHIAL_CLIENT_ID=...
+FISHIAL_SECRET=...
+GROQ_API_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...   # server-only
 ```
 
-### 3. **Frontend Setup**
-```bash
-cd fishid-landing
-npm install
-```
-Set the backend URL in `.env.local`:
-```
-NEXT_PUBLIC_FLASK_API_URL=http://localhost:5001
-```
-Run the frontend:
-```bash
-npm run dev
-```
+Database schema and RLS policies live in [`supabase/migrations/`](./supabase/migrations); the species seed is in [`supabase/seed/`](./supabase/seed). CI (GitHub Actions) runs typecheck, lint, unit tests, and build on every push.
 
----
+## Attribution
 
-## 📝 API Endpoints (Backend)
-- `POST /api/auth/register` — Register
-- `POST /api/auth/login` — Login
-- `POST /api/auth/verify` — Verify JWT
-- `POST /api/auth/logout` — Logout
-- `POST /api/fish/identify` — Identify fish from image
-- `GET /api/fish/history` — Get user’s fish log
-- `POST /api/fish/save` — Save an identification
-- `GET /health` — Health check
+- [Fishial](https://fishial.ai) — fish recognition API
+- [Groq](https://groq.com) — LLM inference
+- Wikipedia — species summaries and reference images
+- Fish icons by Freepik (see [docs/fish-icons-license.html](./docs/fish-icons-license.html))
 
----
+## License
 
-## 📄 License
-This project is licensed under the [MIT License](./LICENSE).
-
----
-
-## 👤 Contact
-- **Author:** Hrishi Kabra
-- **Email:** kabrahrishi@gmail.com
-- **Instagram:** [@hrishikabra](https://instagram.com/hrishikabra)
-- **LinkedIn:** [Hrishi Kabra](https://linkedin.com/in/HrishiKabra)
-
----
-
-## 🙏 Attribution
-- FishBase, Wikipedia, Groq, and Fishial APIs for data and AI
-- Open source libraries as listed in `requirements.txt` and `package.json`
-
----
-
-**Enjoy identifying fish! 🐟✨** 
+[MIT](./LICENSE) — © Hrishi Kabra ([@hrishikabra](https://instagram.com/hrishikabra) · [LinkedIn](https://linkedin.com/in/HrishiKabra) · kabrahrishi@gmail.com)
