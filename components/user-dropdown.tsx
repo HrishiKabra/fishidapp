@@ -3,16 +3,14 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { User, LogOut, Fish, Settings, ChevronDown } from "lucide-react"
+import { User, LogOut, Fish, ChevronDown } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import { BackendStatus } from "./backend-status"
 import { FishIconSelector } from "./fish-icon-selector"
 import Image from "next/image"
 import Link from "next/link"
 
 export function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false)
-  const [showBackendStatus, setShowBackendStatus] = useState(false)
   const [showIconSelector, setShowIconSelector] = useState(false)
   const { user, logout, updateFishIcon } = useAuth()
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -98,17 +96,6 @@ export function UserDropdown() {
                   className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors w-full text-left"
                   onClick={() => {
                     setIsOpen(false)
-                    setShowBackendStatus(true)
-                  }}
-                >
-                  <Settings className="w-4 h-4" />
-                  <span>Settings</span>
-                </button>
-
-                <button
-                  className="flex items-center space-x-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors w-full text-left"
-                  onClick={() => {
-                    setIsOpen(false)
                     setShowIconSelector(true)
                   }}
                 >
@@ -134,7 +121,6 @@ export function UserDropdown() {
         )}
       </div>
 
-      <BackendStatus isOpen={showBackendStatus} onClose={() => setShowBackendStatus(false)} />
       <FishIconSelector
         isOpen={showIconSelector}
         onClose={() => setShowIconSelector(false)}

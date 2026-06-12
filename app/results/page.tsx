@@ -96,12 +96,11 @@ export default function ResultsPage() {
 
     setIsSaving(true)
     try {
-      const token = localStorage.getItem("fishid_auth_token")
-      if (!token) {
+      if (!user) {
         throw new Error("Authentication required")
       }
 
-      await fishApi.saveToLog(uploadedImageData.identification.id, token)
+      await fishApi.saveToLog(uploadedImageData.identification.id)
       setSaveMessage("✓ Saved to your fish log!")
       setTimeout(() => setSaveMessage(""), 3000)
     } catch (error) {

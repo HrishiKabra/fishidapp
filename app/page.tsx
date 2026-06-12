@@ -29,19 +29,7 @@ export default function FishIDLanding() {
       setDebugInfo("")
 
       try {
-        const token = localStorage.getItem("fishid_auth_token")
-
-        // Add debug logging
-        console.log("🐟 Starting fish identification...")
-        console.log("📁 File details:", {
-          name: uploadResult.file.name,
-          size: uploadResult.file.size,
-          type: uploadResult.file.type,
-        })
-        console.log("👤 User ID:", user?.id)
-        console.log("🔑 Token exists:", !!token)
-
-        const response = await fishApi.identify(uploadResult.file, user?.id, token || undefined)
+        const response = await fishApi.identify(uploadResult.file, user?.id)
 
         // Add detailed response logging
         console.log("🎯 API Response:", response)
