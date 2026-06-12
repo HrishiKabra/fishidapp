@@ -1,0 +1,133 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - link [ref=e7] [cursor=pointer]:
+            - /url: /
+            - button [ref=e8]:
+              - img
+          - generic [ref=e9]:
+            - img [ref=e10]
+            - heading "Choose Your Fish Icon" [level=1] [ref=e16]
+        - button "Save" [ref=e189] [cursor=pointer]:
+          - generic [ref=e190]:
+            - img
+            - generic [ref=e191]: Save
+    - generic [ref=e17]:
+      - generic [ref=e19]:
+        - img [ref=e20]
+        - textbox "Search fish icons..." [ref=e23]
+      - generic [ref=e25]:
+        - paragraph [ref=e26]: "Current Selection:"
+        - generic [ref=e27]:
+          - img "Selected icon" [ref=e29]
+          - generic [ref=e30]:
+            - paragraph [ref=e31]: Whale
+            - paragraph [ref=e32]: Your fish icon
+          - img [ref=e33]
+      - generic [ref=e196]: ✓ Fish icon updated successfully!
+      - generic [ref=e35]:
+        - button "Gold Fish" [ref=e36] [cursor=pointer]:
+          - img "Gold Fish" [ref=e38]
+        - button "Salmon" [ref=e42] [cursor=pointer]:
+          - img "Salmon" [ref=e44]
+        - button "Cod" [ref=e45] [cursor=pointer]:
+          - img "Cod" [ref=e47]
+        - button "Manta Ray" [ref=e48] [cursor=pointer]:
+          - img "Manta Ray" [ref=e50]
+        - button "Fish" [ref=e51] [cursor=pointer]:
+          - img "Fish" [ref=e53]
+        - button "Whale" [ref=e54] [cursor=pointer]:
+          - generic [ref=e55]:
+            - img "Whale" [ref=e56]
+            - img [ref=e193]
+        - button "Swordfish" [ref=e57] [cursor=pointer]:
+          - img "Swordfish" [ref=e59]
+        - button "Discus" [ref=e60] [cursor=pointer]:
+          - img "Discus" [ref=e62]
+        - button "Angel Fish" [ref=e63] [cursor=pointer]:
+          - img "Angel Fish" [ref=e65]
+        - button "Tuna" [ref=e66] [cursor=pointer]:
+          - img "Tuna" [ref=e68]
+        - button "Trout" [ref=e69] [cursor=pointer]:
+          - img "Trout" [ref=e71]
+        - button "Pollock" [ref=e72] [cursor=pointer]:
+          - img "Pollock" [ref=e74]
+        - button "Catfish" [ref=e75] [cursor=pointer]:
+          - img "Catfish" [ref=e77]
+        - button "Bream" [ref=e78] [cursor=pointer]:
+          - img "Bream" [ref=e80]
+        - button "Perch" [ref=e81] [cursor=pointer]:
+          - img "Perch" [ref=e83]
+        - button "Fish 1" [ref=e84] [cursor=pointer]:
+          - img "Fish 1" [ref=e86]
+        - button "Guppy" [ref=e87] [cursor=pointer]:
+          - img "Guppy" [ref=e89]
+        - button "Carp Fish" [ref=e90] [cursor=pointer]:
+          - img "Carp Fish" [ref=e92]
+        - button "Fish 2" [ref=e93] [cursor=pointer]:
+          - img "Fish 2" [ref=e95]
+        - button "Halibut" [ref=e96] [cursor=pointer]:
+          - img "Halibut" [ref=e98]
+        - button "Angel Fish 1" [ref=e99] [cursor=pointer]:
+          - img "Angel Fish 1" [ref=e101]
+        - button "Fish 3" [ref=e102] [cursor=pointer]:
+          - img "Fish 3" [ref=e104]
+        - button "Flying Fish" [ref=e105] [cursor=pointer]:
+          - img "Flying Fish" [ref=e107]
+        - button "Zander" [ref=e108] [cursor=pointer]:
+          - img "Zander" [ref=e110]
+        - button "Surgeon Fish" [ref=e111] [cursor=pointer]:
+          - img "Surgeon Fish" [ref=e113]
+        - button "Dolphin" [ref=e114] [cursor=pointer]:
+          - img "Dolphin" [ref=e116]
+        - button "Fish 4" [ref=e117] [cursor=pointer]:
+          - img "Fish 4" [ref=e119]
+        - button "Fish 5" [ref=e120] [cursor=pointer]:
+          - img "Fish 5" [ref=e122]
+        - button "Clown Fish" [ref=e123] [cursor=pointer]:
+          - img "Clown Fish" [ref=e125]
+        - button "Starfish" [ref=e126] [cursor=pointer]:
+          - img "Starfish" [ref=e128]
+        - button "Fish 6" [ref=e129] [cursor=pointer]:
+          - img "Fish 6" [ref=e131]
+        - button "Sunfish" [ref=e132] [cursor=pointer]:
+          - img "Sunfish" [ref=e134]
+        - button "Fish 7" [ref=e135] [cursor=pointer]:
+          - img "Fish 7" [ref=e137]
+        - button "Moon Fish" [ref=e138] [cursor=pointer]:
+          - img "Moon Fish" [ref=e140]
+        - button "Hammerhead Fish" [ref=e141] [cursor=pointer]:
+          - img "Hammerhead Fish" [ref=e143]
+        - button "Fish 8" [ref=e144] [cursor=pointer]:
+          - img "Fish 8" [ref=e146]
+        - button "Fish 9" [ref=e147] [cursor=pointer]:
+          - img "Fish 9" [ref=e149]
+        - button "Fish 10" [ref=e150] [cursor=pointer]:
+          - img "Fish 10" [ref=e152]
+        - button "Shark" [ref=e153] [cursor=pointer]:
+          - img "Shark" [ref=e155]
+        - button "Fish 11" [ref=e156] [cursor=pointer]:
+          - img "Fish 11" [ref=e158]
+        - button "Fish 12" [ref=e159] [cursor=pointer]:
+          - img "Fish 12" [ref=e161]
+        - button "Fish 13" [ref=e162] [cursor=pointer]:
+          - img "Fish 13" [ref=e164]
+        - button "Horn" [ref=e165] [cursor=pointer]:
+          - img "Horn" [ref=e167]
+        - button "Fish 14" [ref=e168] [cursor=pointer]:
+          - img "Fish 14" [ref=e170]
+        - button "Fish 15" [ref=e171] [cursor=pointer]:
+          - img "Fish 15" [ref=e173]
+        - button "Sickle" [ref=e174] [cursor=pointer]:
+          - img "Sickle" [ref=e176]
+        - button "Fish 16" [ref=e177] [cursor=pointer]:
+          - img "Fish 16" [ref=e179]
+        - button "Rock Fish" [ref=e180] [cursor=pointer]:
+          - img "Rock Fish" [ref=e182]
+        - button "Fish 17" [ref=e183] [cursor=pointer]:
+          - img "Fish 17" [ref=e185]
+        - button "Fish 18" [ref=e186] [cursor=pointer]:
+          - img "Fish 18" [ref=e188]
+  - alert [ref=e195]

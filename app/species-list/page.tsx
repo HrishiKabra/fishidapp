@@ -25,21 +25,7 @@ import { AuthModal } from "@/components/auth-modal"
 import { UserDropdown } from "@/components/user-dropdown"
 import { HamburgerMenu } from "@/components/hamburger-menu"
 import { useAuth } from "@/lib/auth-context"
-import { speciesApi, ApiError } from "@/lib/api"
-
-interface Species {
-  id: string
-  common_name: string
-  scientific_name: string
-  image_url?: string
-  habitat?: string
-  distribution?: string
-  max_length_cm?: number
-  conservation_status?: string
-  description?: string
-  family?: string
-  region?: string
-}
+import { fetchSpecies, type Species } from "@/lib/species"
 
 const getStatusColor = (status: string) => {
   switch (status?.toUpperCase()) {
@@ -106,33 +92,20 @@ export default function SpeciesListPage() {
     setError(null)
     
     try {
-      const params: any = {
+      const result = await fetchSpecies({
         page: currentPage,
-        limit: 20
-      }
-      
-      if (searchTerm) params.search = searchTerm
-      if (selectedRegion !== 'all') params.region = selectedRegion
-      if (selectedHabitat !== 'all') params.habitat = selectedHabitat
-      if (selectedStatus !== 'all') params.status = selectedStatus
-      
-      const response = await speciesApi.getSpecies(params)
-      
-      if (response.success) {
-        setSpecies(response.species)
-        setFilteredSpecies(response.species)
-        setTotalPages(response.total_pages)
-        setTotalSpecies(response.total)
-      } else {
-        setError(response.error || 'Failed to load species')
-      }
-    } catch (error) {
-      console.error('Error loading species:', error)
-      if (error instanceof ApiError) {
-        setError(error.message)
-      } else {
-        setError('Failed to load species. Please try again.')
-      }
+        limit: 20,
+        search: searchTerm || undefined,
+        region: selectedRegion,
+        habitat: selectedHabitat,
+        status: selectedStatus,
+      })
+      setSpecies(result.species)
+      setFilteredSpecies(result.species)
+      setTotalPages(result.totalPages)
+      setTotalSpecies(result.total)
+    } catch (error: any) {
+      setError(error.message || "Failed to load species. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -391,7 +364,7 @@ export default function SpeciesListPage() {
                           {fish.max_length_cm && (
                             <div className="flex items-center space-x-2">
                               <Ruler className="w-3 h-3 text-[#2e9eb3]" />
-                              <span>Up to {fish.max_length_cm} cm</span>
+                              <span>Up to {fish.max_length_cm}</span>
                             </div>
                           )}
                         </div>

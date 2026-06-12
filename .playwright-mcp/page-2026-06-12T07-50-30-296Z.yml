@@ -1,0 +1,52 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e7]:
+      - generic [ref=e8]:
+        - link "FishID Logo" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - img "FishID Logo" [ref=e11]
+        - navigation [ref=e12]:
+          - button "About Us" [ref=e13] [cursor=pointer]
+          - link "Fish Log" [ref=e14] [cursor=pointer]:
+            - /url: /fish-log
+          - link "Species List" [ref=e15] [cursor=pointer]:
+            - /url: /species-list
+          - button "Log In" [ref=e104] [cursor=pointer]
+    - generic [ref=e21]:
+      - img "Underwater coral reef background" [ref=e23]
+      - generic [ref=e25]:
+        - heading "UPLOAD YOUR IMAGE" [level=1] [ref=e26]
+        - generic [ref=e29] [cursor=pointer]:
+          - img [ref=e30]
+          - paragraph [ref=e33]: "Drag your file(s) or browse:"
+          - paragraph [ref=e34]: JPEG / PNG / WebP – max 10 MB
+        - button "Identify Now!" [ref=e35] [cursor=pointer]
+        - generic [ref=e37]:
+          - paragraph [ref=e38]: "🔗 Flask Backend:"
+          - paragraph [ref=e39]: Ready to connect to your working Flask API!
+    - generic [ref=e41]:
+      - heading "About FishID" [level=2] [ref=e42]
+      - generic [ref=e43]:
+        - paragraph [ref=e44]: FishID was created out of a deep love for the ocean and a passion for technology. As a PADI Rescue Diver and Master Scuba Diver who has explored marine life across the globe, I've always been fascinated by the incredible diversity beneath the surface.
+        - paragraph [ref=e45]: Now studying Computer Science at Tulane University, I wanted to combine that curiosity with my technical skills to build something meaningful. FishID uses cutting-edge AI to identify fish species from photos, offering instant recognition, scientific facts, and personalized logs for divers, snorkelers, and nature lovers alike.
+        - paragraph [ref=e46]: It's my way of bringing tech and marine conservation together—one fish at a time.
+      - img "Scuba diver underwater" [ref=e49]
+    - contentinfo [ref=e50]:
+      - generic [ref=e52]:
+        - generic [ref=e53]:
+          - heading "Reach Out!" [level=3] [ref=e54]
+          - paragraph [ref=e55]: Feel free to reach out to me on Instagram, LinkedIn or via email.
+          - paragraph [ref=e56]: kabrahrishi@gmail.com
+          - generic [ref=e57]:
+            - link [ref=e58] [cursor=pointer]:
+              - /url: https://instagram.com/hrishikabra
+              - img [ref=e59]
+            - link [ref=e62] [cursor=pointer]:
+              - /url: https://github.com/HrishiKabra
+              - img [ref=e63]
+            - link [ref=e66] [cursor=pointer]:
+              - /url: https://linkedin.com/in/HrishiKabra
+              - img [ref=e67]
+          - paragraph [ref=e71]: © 2024 All Rights Reserved
+        - img "FishID Logo" [ref=e73]
+  - alert [ref=e6]
