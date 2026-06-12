@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth-context"
 import { HamburgerMenu } from "@/components/hamburger-menu"
 import { AuthModal } from "@/components/auth-modal"
 import { loadEnrichment, type EnrichmentSections } from "@/lib/enrichment"
+import { saveIdentification } from "@/lib/fish-log"
 import type { WikiSummary } from "@/lib/server/wiki"
 import Link from "next/link"
 
@@ -54,6 +55,8 @@ export default function ResultsPage() {
   const [data, setData] = useState<StoredIdentification | null>(null)
   const [noData, setNoData] = useState(false)
   const [saveMessage, setSaveMessage] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [wiki, setWiki] = useState<WikiSummary | null>(null)
   const [sections, setSections] = useState<EnrichmentSections>({ description: "", visual_cues: "", fun_fact: "" })
@@ -91,13 +94,27 @@ export default function ResultsPage() {
     })
   }, [data])
 
-  const handleSaveToLog = () => {
+  const handleSaveToLog = async () => {
     if (!user) {
       setShowAuthModal(true)
       return
     }
-    setSaveMessage("Saving to your fish log arrives in the next update!")
-    setTimeout(() => setSaveMessage(""), 3000)
+    if (!data || saved || isSaving) return
+    setIsSaving(true)
+    try {
+      await saveIdentification({
+        candidates: data.candidates,
+        commonName: wiki?.common_name ?? null,
+        photoDataUrl: data.uploadedImage,
+      })
+      setSaved(true)
+      setSaveMessage("✓ Saved to your fish log!")
+    } catch (err: any) {
+      setSaveMessage(err.message || "Failed to save to fish log")
+    } finally {
+      setIsSaving(false)
+      setTimeout(() => setSaveMessage(""), 4000)
+    }
   }
 
   const scrollToAbout = () => {
@@ -337,9 +354,28 @@ export default function ResultsPage() {
           <Link href="/">
             <Button className="bg-[#2e9eb3] hover:bg-[#138094] text-white px-8 py-3">Identify Another Fish</Button>
           </Link>
-          <Button variant="outline" className="px-8 py-3 bg-transparent" onClick={handleSaveToLog}>
-            <Heart className="w-4 h-4 mr-2" />
-            Save to Fish Log
+          <Button
+            variant="outline"
+            className="px-8 py-3 bg-transparent"
+            onClick={handleSaveToLog}
+            disabled={isSaving || saved}
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : saved ? (
+              <>
+                <Heart className="w-4 h-4 mr-2 fill-current" />
+                Saved
+              </>
+            ) : (
+              <>
+                <Heart className="w-4 h-4 mr-2" />
+                Save to Fish Log
+              </>
+            )}
           </Button>
         </div>
 
