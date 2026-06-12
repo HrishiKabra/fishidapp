@@ -8,7 +8,7 @@ import { FileUpload } from "@/components/file-upload"
 import { AuthModal } from "@/components/auth-modal"
 import { UserDropdown } from "@/components/user-dropdown"
 import { useAuth } from "@/lib/auth-context"
-import { fishApi, ApiError } from "@/lib/api"
+import { prepareImage } from "@/lib/image-prep"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { HamburgerMenu } from "@/components/hamburger-menu"
@@ -23,70 +23,48 @@ export default function FishIDLanding() {
   const router = useRouter()
 
   const handleIdentifyClick = async () => {
-    if (uploadResult?.success && uploadResult?.file) {
-      setIsIdentifying(true)
-      setShowWarning(false)
-      setDebugInfo("")
-
-      try {
-        const response = await fishApi.identify(uploadResult.file, user?.id)
-
-        // Add detailed response logging
-        console.log("🎯 API Response:", response)
-        console.log("✅ Response success:", response.success)
-        console.log("📊 Response result:", response.result)
-
-        if (response.success && response.result) {
-          // Store the identification data for the results page
-          const identificationData = {
-            uploadedImage: uploadResult.processedImage?.url,
-            originalFileName: uploadResult.file.name,
-            imageSize: uploadResult.processedImage?.size,
-            imageDimensions: {
-              width: uploadResult.processedImage?.width,
-              height: uploadResult.processedImage?.height,
-            },
-            timestamp: new Date().toISOString(),
-            userId: user?.id,
-            apiResponse: response, // Store the full API response for debugging
-            identification: response.result, // Use the result directly from Flask backend
-          }
-
-          console.log("💾 Storing identification data:", identificationData)
-          localStorage.setItem("fishIdentificationData", JSON.stringify(identificationData))
-
-          // Navigate to results page
-          router.push("/results")
-        } else {
-          throw new Error(response.message || "Identification failed")
-        }
-      } catch (error) {
-        console.error("❌ Identification error:", error)
-
-        let errorMessage = "Failed to identify fish. Please try again."
-
-        if (error instanceof ApiError) {
-          if (error.rateLimitExceeded) {
-            errorMessage = error.message
-          } else if (error.status === 0) {
-            errorMessage = "Unable to connect to identification service. Please check your connection."
-          } else {
-            errorMessage = error.message
-          }
-        }
-
-        // Show error message
-        setDebugInfo(`Error: ${errorMessage}`)
-        setShowWarning(true)
-        setTimeout(() => setShowWarning(false), 5000)
-      } finally {
-        setIsIdentifying(false)
-      }
-    } else {
-      // Show warning message
+    if (!uploadResult?.success || !uploadResult?.file) {
       setShowWarning(true)
-      // Hide warning after 3 seconds
       setTimeout(() => setShowWarning(false), 3000)
+      return
+    }
+
+    if (!user) {
+      setShowAuthModal(true)
+      return
+    }
+
+    setIsIdentifying(true)
+    setShowWarning(false)
+    setDebugInfo("")
+
+    try {
+      const prepared = await prepareImage(uploadResult.file)
+      const formData = new FormData()
+      formData.append("image", prepared, "upload.jpg")
+
+      const response = await fetch("/api/identify", { method: "POST", body: formData })
+      const payload = await response.json()
+
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Identification failed. Please try again.")
+      }
+
+      const identificationData = {
+        uploadedImage: uploadResult.processedImage?.url,
+        originalFileName: uploadResult.file.name,
+        timestamp: new Date().toISOString(),
+        candidates: payload.result.candidates,
+        otherFishCount: payload.result.otherFishCount,
+      }
+      localStorage.setItem("fishIdentificationData", JSON.stringify(identificationData))
+      router.push("/results")
+    } catch (error: any) {
+      setDebugInfo(`Error: ${error.message || "Failed to identify fish. Please try again."}`)
+      setShowWarning(true)
+      setTimeout(() => setShowWarning(false), 5000)
+    } finally {
+      setIsIdentifying(false)
     }
   }
 
@@ -220,15 +198,6 @@ export default function FishIDLanding() {
             </div>
           )}
 
-          {/* Flask Backend Status */}
-          {process.env.NODE_ENV === "development" && (
-            <div className="mt-4 mx-auto max-w-md">
-              <div className="bg-blue-500/20 border border-blue-500/50 text-blue-200 px-4 py-2 rounded-lg backdrop-blur-sm text-xs">
-                <p className="font-medium">🔗 Flask Backend: {process.env.NEXT_PUBLIC_FLASK_API_URL}</p>
-                <p>Ready to connect to your working Flask API!</p>
-              </div>
-            </div>
-          )}
         </div>
       </section>
 
