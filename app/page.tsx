@@ -50,8 +50,15 @@ export default function FishIDLanding() {
         throw new Error(payload.message || "Identification failed. Please try again.")
       }
 
+      const preparedDataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.onerror = () => reject(new Error("Could not read image"))
+        reader.readAsDataURL(prepared)
+      })
+
       const identificationData = {
-        uploadedImage: uploadResult.processedImage?.url,
+        uploadedImage: preparedDataUrl,
         originalFileName: uploadResult.file.name,
         timestamp: new Date().toISOString(),
         candidates: payload.result.candidates,
