@@ -61,9 +61,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
 
+  // Supabase fires auth events on every window focus/token refresh. Keep the
+  // previous object when nothing changed so consumers' effects don't re-fire.
+  const applyUser = (next: User) =>
+    setUser((prev) =>
+      prev &&
+      prev.id === next.id &&
+      prev.email === next.email &&
+      prev.name === next.name &&
+      prev.fish_icon === next.fish_icon
+        ? prev
+        : next,
+    )
+
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session) setUser(await buildUser(session))
+      if (session) applyUser(await buildUser(session))
       setIsInitialized(true)
     })
 
@@ -75,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
       // Deferred: awaiting supabase calls directly inside onAuthStateChange deadlocks.
-      setTimeout(async () => setUser(await buildUser(session)), 0)
+      setTimeout(async () => applyUser(await buildUser(session)), 0)
     })
 
     return () => subscription.unsubscribe()
