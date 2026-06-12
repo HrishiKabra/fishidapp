@@ -1,156 +1,91 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { authApi, ApiError } from "./api"
+import type { Session } from "@supabase/supabase-js"
+import { supabase } from "./supabase/client"
+
+const DEFAULT_FISH_ICON = "/images/fish-icons/001-gold-fish.png"
 
 interface User {
   id: string
   email: string
   name: string
   fish_icon?: string
-  avatar?: string
-  createdAt?: string
 }
 
 interface AuthContextType {
   user: User | null
   login: (email: string, password: string) => Promise<void>
-  signup: (email: string, password: string, name: string, fishIcon?: string) => Promise<void>
+  signup: (
+    email: string,
+    password: string,
+    name: string,
+    fishIcon?: string,
+  ) => Promise<{ needsEmailConfirmation: boolean }>
+  signInWithGoogle: () => Promise<void>
   logout: () => Promise<void>
   updateFishIcon: (fishIcon: string) => Promise<void>
-  checkAuthStatus: () => Promise<boolean>
   loading: boolean
   isInitialized: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const TOKEN_KEY = "fishid_auth_token"
-const USER_KEY = "fishid_user"
+async function buildUser(session: Session): Promise<User> {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username, fish_icon")
+    .eq("id", session.user.id)
+    .single()
+
+  return {
+    id: session.user.id,
+    email: session.user.email ?? "",
+    name: profile?.username ?? session.user.email?.split("@")[0] ?? "User",
+    fish_icon: profile?.fish_icon ?? DEFAULT_FISH_ICON,
+  }
+}
+
+function friendlyAuthError(message: string): string {
+  if (message.includes("Invalid login credentials")) {
+    return "Incorrect email or password."
+  }
+  if (message.includes("Email not confirmed")) {
+    return "Please confirm your email before signing in — check your inbox."
+  }
+  return message
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
 
-  // Initialize auth state on app start
   useEffect(() => {
-    initializeAuth()
-  }, [])
-
-  // Add a retry mechanism for auth initialization
-  useEffect(() => {
-    if (isInitialized && !user) {
-      // If auth is initialized but no user, try one more time after a delay
-      const retryTimer = setTimeout(() => {
-        console.log("🔄 Retrying auth initialization...")
-        initializeAuth()
-      }, 2000)
-      
-      return () => clearTimeout(retryTimer)
-    }
-  }, [isInitialized, user])
-
-  // Set up periodic auth check to keep user logged in
-  useEffect(() => {
-    if (user) {
-      // Check auth status every 5 minutes
-      const interval = setInterval(async () => {
-        console.log("🔄 Periodic auth check...")
-        const isValid = await checkAuthStatus()
-        if (!isValid) {
-          console.log("❌ Periodic check failed, user logged out")
-        }
-      }, 5 * 60 * 1000) // 5 minutes
-
-      return () => clearInterval(interval)
-    }
-  }, [user])
-
-  const initializeAuth = async () => {
-    try {
-      const token = localStorage.getItem(TOKEN_KEY)
-      const storedUser = localStorage.getItem(USER_KEY)
-
-      console.log("🔐 Initializing auth...", { 
-        hasToken: !!token, 
-        hasStoredUser: !!storedUser,
-        tokenLength: token?.length
-      })
-
-      if (token && storedUser) {
-        // Immediately set user from stored data for instant UI response
-        try {
-          const parsedUser = JSON.parse(storedUser)
-          console.log("✅ Setting user from stored data:", parsedUser.name)
-          setUser(parsedUser)
-        } catch (parseError) {
-          console.log("❌ Failed to parse stored user data:", parseError)
-          clearAuthData()
-        }
-
-        // Then verify token in background
-        try {
-          console.log("🔐 Verifying token in background...")
-          const response = await authApi.verifyToken(token)
-          
-          if (response.success && response.user) {
-            console.log("✅ Token verified, updating user data")
-            setUser(response.user)
-            localStorage.setItem(USER_KEY, JSON.stringify(response.user))
-          } else {
-            console.log("❌ Token invalid, logging out")
-            clearAuthData()
-          }
-        } catch (error) {
-          console.log("❌ Token verification failed:", error)
-          // Don't clear data immediately, let user continue with stored data
-        }
-      } else {
-        console.log("📝 No stored auth data found")
-      }
-    } catch (error) {
-      console.error("Auth initialization error:", error)
-      clearAuthData()
-    } finally {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session) setUser(await buildUser(session))
       setIsInitialized(true)
-      console.log("✅ Auth initialization complete, user state:", !!user)
-    }
-  }
+    })
 
-  const clearAuthData = () => {
-    localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(USER_KEY)
-    setUser(null)
-  }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        setUser(null)
+        return
+      }
+      // Deferred: awaiting supabase calls directly inside onAuthStateChange deadlocks.
+      setTimeout(async () => setUser(await buildUser(session)), 0)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
 
   const login = async (email: string, password: string) => {
     setLoading(true)
     try {
-      console.log("🔐 Attempting login for:", email)
-      const response = await authApi.login(email, password)
-
-      if (response.success && response.user && response.token) {
-        console.log("✅ Login successful:", response.user)
-
-        // Create user object with fish_icon
-        const userData = {
-          ...response.user,
-          fish_icon: response.user.fish_icon || "/images/fish-icons/001-gold-fish.png",
-        }
-
-        setUser(userData)
-        localStorage.setItem(TOKEN_KEY, response.token)
-        localStorage.setItem(USER_KEY, JSON.stringify(userData))
-      } else {
-        throw new Error("Login failed - invalid response")
-      }
-    } catch (error) {
-      console.error("❌ Login error:", error)
-      if (error instanceof ApiError) {
-        throw new Error(error.message)
-      }
-      throw new Error("Login failed. Please try again.")
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw new Error(friendlyAuthError(error.message))
     } finally {
       setLoading(false)
     }
@@ -159,110 +94,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signup = async (email: string, password: string, name: string, fishIcon?: string) => {
     setLoading(true)
     try {
-      console.log("📝 Attempting signup for:", email)
-      const response = await authApi.signup(email, password, name, fishIcon)
-
-      if (response.success && response.user && response.token) {
-        console.log("✅ Signup successful:", response.user)
-
-        // Create user object with fish_icon
-        const userData = {
-          ...response.user,
-          fish_icon: response.user.fish_icon || "/images/fish-icons/001-gold-fish.png",
-        }
-
-        setUser(userData)
-        localStorage.setItem(TOKEN_KEY, response.token)
-        localStorage.setItem(USER_KEY, JSON.stringify(userData))
-      } else {
-        throw new Error("Signup failed - invalid response")
-      }
-    } catch (error) {
-      console.error("❌ Signup error:", error)
-      if (error instanceof ApiError) {
-        throw new Error(error.message)
-      }
-      throw new Error("Signup failed. Please try again.")
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { username: name, fish_icon: fishIcon || DEFAULT_FISH_ICON },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      })
+      if (error) throw new Error(friendlyAuthError(error.message))
+      return { needsEmailConfirmation: !data.session }
     } finally {
       setLoading(false)
     }
+  }
+
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    })
+    if (error) throw new Error(friendlyAuthError(error.message))
   }
 
   const logout = async () => {
     setLoading(true)
     try {
-      console.log("🚪 Logging out...")
-      await authApi.logout()
-    } catch (error) {
-      console.error("Logout API error:", error)
+      await supabase.auth.signOut()
     } finally {
-      clearAuthData()
       setLoading(false)
-      console.log("✅ Logout complete")
-    }
-  }
-
-  const checkAuthStatus = async (): Promise<boolean> => {
-    const token = localStorage.getItem(TOKEN_KEY)
-    if (!token) {
-      return false
-    }
-
-    try {
-      const response = await authApi.verifyToken(token)
-      if (response.success && response.user) {
-        setUser(response.user)
-        return true
-      } else {
-        clearAuthData()
-        return false
-      }
-    } catch (error) {
-      console.log("❌ Auth check failed:", error)
-      clearAuthData()
-      return false
     }
   }
 
   const updateFishIcon = async (fishIcon: string) => {
-    const token = localStorage.getItem(TOKEN_KEY)
-    if (!token) {
-      throw new Error("No authentication token found")
-    }
-
-    try {
-      console.log("🐟 Updating fish icon to:", fishIcon)
-      const response = await authApi.updateFishIcon(token, fishIcon)
-
-      if (response.success) {
-        // Update user data with new fish icon
-        if (user) {
-          const updatedUser = { ...user, fish_icon: fishIcon }
-          setUser(updatedUser)
-          localStorage.setItem(USER_KEY, JSON.stringify(updatedUser))
-          console.log("✅ Fish icon updated successfully")
-        }
-      } else {
-        throw new Error("Failed to update fish icon")
-      }
-    } catch (error) {
-      console.error("❌ Fish icon update error:", error)
-      throw new Error("Failed to update fish icon. Please try again.")
-    }
+    if (!user) throw new Error("Not signed in")
+    const { error } = await supabase
+      .from("profiles")
+      .update({ fish_icon: fishIcon })
+      .eq("id", user.id)
+    if (error) throw new Error("Failed to update fish icon. Please try again.")
+    setUser({ ...user, fish_icon: fishIcon })
   }
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        login,
-        signup,
-        logout,
-        updateFishIcon,
-        checkAuthStatus,
-        loading,
-        isInitialized,
-      }}
+      value={{ user, login, signup, signInWithGoogle, logout, updateFishIcon, loading, isInitialized }}
     >
       {children}
     </AuthContext.Provider>
