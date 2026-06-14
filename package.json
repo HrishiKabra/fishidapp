@@ -23,14 +23,14 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.454.0",
     "next": "14.2.16",
-    "react": "^18",
-    "react-dom": "^18",
+    "react": "^19",
+    "react-dom": "^19",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/node": "^22",
-    "@types/react": "^18",
+    "@types/react": "^19",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.21",
     "eslint": "^8",
